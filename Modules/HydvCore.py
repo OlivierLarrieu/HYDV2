@@ -65,8 +65,8 @@ class Hydv_Stage(object):
         self.width = width
         self.height = height
         self.zindex = str(zindex)
-        self.classname = classname
-        self.stage_id = "stage_" + str(number)
+        self.classname = classname       
+        self.id = "stage_" + str(number)
         self.javascript = javascript_context
         self._create_stage()
 
@@ -75,45 +75,65 @@ class Hydv_Stage(object):
                                                + '","' 
                                                + str(self.height)
                                                + '","'
-                                               + self.stage_id
+                                               + self.id
                                                + '","'
                                                + self.zindex
                                                + '","'
                                                + self.classname + '");')
 
+    def add(self, element):
+        self.javascript('Tools.Stage_add("'+self.id+'","'+str(element.id)+'");')
+
     def slide(self, speed, direction, position):
-        self.javascript('Tools.slide_stage("'+ self.stage_id +'","'+ str(speed) +'","' + str(direction) +'","' + str(position) + '");')
+        self.javascript('Tools.slide_stage("'+ self.id +'","'+ str(speed) +'","' + str(direction) +'","' + str(position) + '");')
 
     def fadeIn(self):
-        self.javascript('Tools.fadeIn_stage("'+ self.stage_id +'");')
+        self.javascript('Tools.fadeIn_stage("'+ self.id +'");')
 
     def fadeOut(self):
-        self.javascript('Tools.fadeOut_stage("'+ self.stage_id +'");')
+        self.javascript('Tools.fadeOut_stage("'+ self.id +'");')
         
     def hide(self):
-        self.javascript('Tools.hide_stage("'+ self.stage_id +'");')
+        self.javascript('Tools.hide_stage("'+ self.id +'");')
     
     def show(self):
-        self.javascript('Tools.show_stage("'+ self.stage_id +'");')        
+        self.javascript('Tools.show_stage("'+ self.id +'");')        
 
-class Hydv_Javascript_Tools():
-    """ ============================================================== """
-    """ Tools are shortcuts to create and embed widget in stage or     """
-    """ root_container                                                 """
-    """ ============================================================== """
+class Hydv_Button(object):# Hydv_Button(self.javascript, 100, self.height, 1, 500, "btn")
+    def __init__(self, javascript_context, text, width, height, number, classname):
+        self.text = text
+        self.width = width
+        self.height = height
+        self.classname = classname
+        self.id = "button_" + str(number)
+        self.javascript = javascript_context
+        self._create_button()
 
-    def create_button(self, function, text, destination_id):
-        """
-            Action is the direct reference to the function which will be call
-            on the sending signal.
-        """
-        self.javascript('Tools.Create_Button("'+function+'","'+text+'","btn","'+destination_id+'");')
+    def _create_button(self):
+        self.javascript('Tools.Create_Button("'+self.text+'","'
+                                               +str(self.width)+'","'
+                                               +str(self.height)+'","'
+                                               +self.id+'","'
+                                               +self.classname+'");')
 
-    def create_button_fixed(self, function, text, destination_id):
-        """
-            Action is the direct reference to the function which will be call
-            on the sending signal.
-        """
-        self.javascript('Tools.Create_Button_Fixed("'+function+'","'+text+'","btn","'+destination_id+'");')
+    def onclick(self, action):
+        self.javascript('Tools.Connect_Button_Onclick("'+action+'","'+self.id+'");')
 
+    def onmouseover(self, action):
+        self.javascript('Tools.Connect_Button_Onmouseover("'+action+'","'+self.id+'");')
 
+    def onmouseout(self, action):
+        self.javascript('Tools.Connect_Button_Onmouseout("'+action+'","'+self.id+'");')
+
+class Hydv_Icon(object):
+    def __init__(self, javascript_context, width, height, number, zindex, classname):
+        self.width = width
+        self.height = height
+        self.zindex = str(zindex)
+        self.classname = classname
+        self.id = "icon_" + str(number)
+        self.javascript = javascript_context
+        self._create_icon()
+
+    def _create_icon(self):
+        pass

@@ -19,9 +19,7 @@ Tools.Create_root_container = function(){
     return true   
 
 }
-Tools.Create_stage = function(width, height, id, zindex, classname){
-    console.log(classname);
-    
+Tools.Create_stage = function(width, height, id, zindex, classname){    
     new_stage = document.createElement('div');
     new_stage.id = id;
     new_stage.className = String(classname);
@@ -36,24 +34,53 @@ Tools.Create_stage = function(width, height, id, zindex, classname){
 
 }
 Tools.slide_stage = function(stage_id, speed, direction, position){
-
     if(direction === "1"){$("#" + stage_id).animate({"left": position}, 300);};
     if(direction === "2"){$("#" + stage_id).animate({"right": position}, 300);};
        
 }
 
-Tools.Create_Button = function(action_name, text, classname, destination_id){
+// width, height, number, zindex, classname):
+Tools.Create_Button = function(text, width, height, id, classname){
     new_button = document.createElement('div');
+    
     new_button.className = classname;
+    new_button.style.width = width+"px";
+    new_button.style.height = height+"px";
+    new_button.style.visibility = "hidden";
     new_button.innerText = text;
-    new_button.onclick = function(){
-        Tools.Send(action_name);
-    }
-    stage = document.getElementById(destination_id)
-    stage.appendChild(new_button);
+    new_button.id = id;
+    //stage = document.getElementById(destination_id)
+    document.body.appendChild(new_button);
     return true   
 }
+Tools.Connect_Button_Onclick = function(action, id){
+    button = document.getElementById(id);
+    button.onclick = function(){
+        Tools.Send(action);
+    }
 
+}
+Tools.Connect_Button_Onmouseover = function(action, id){
+    button = document.getElementById(id);
+    button.onmouseover = function(){
+        Tools.Send(action);
+    }
+}
+Tools.Connect_Button_Onmouseout = function(action, id){
+    button = document.getElementById(id);
+    button.onmouseout = function(){
+        Tools.Send(action);
+    }
+}
+
+Tools.Stage_add = function(stage_id, element_id){
+    console.log("add button:"+element_id);
+    console.log("to stage:"+stage_id);
+    element = document.getElementById(element_id);
+    stage = document.getElementById(stage_id);
+    stage.appendChild(element);
+    element.style.visibility = "visible";
+}
 Tools.Create_Button_Fixed = function(action_name, text, classname, destination_id){
     new_button = document.createElement('div');
     new_button.className = classname;

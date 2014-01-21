@@ -110,9 +110,15 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
 
     def create_principal_bar(self):
         self.stage3 = Hydv_Stage(self.javascript, self.width-self.stage1.width-20, self.height, 3, 800, "stage")
+        self.button_test = Hydv_Button(self.javascript , "apps", 100, 20, 9, "btn")
+        self.button_test.onclick('self.slide_next()')
+        self.stage3.add(self.button_test)
 
     def create_second_bar(self):
         self.stage4 = Hydv_Stage(self.javascript, self.width-self.stage1.width, self.height, 4, 800, "stage")
+        self.button_test2 = Hydv_Button(self.javascript , "apps", 100, 20, 10, "btn")
+        self.button_test2.onclick('self.slide_init()')
+        self.stage4.add(self.button_test2)
 
     def create_menu_buttons(self):
         self.stage1 = Hydv_Stage(self.javascript, 330, self.height, 1, 1000, "left_stage")

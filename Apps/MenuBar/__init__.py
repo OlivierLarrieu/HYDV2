@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-__author__ = "Olivier LARRIEU
+__author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
 import os

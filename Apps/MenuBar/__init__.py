@@ -96,13 +96,14 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         """ Action here are executed on the View initialisation only """
         # Create the Root container
         self.create_root_container()
-        #self.create_button('self.leave()', "Leave", "root_container")
+
         self.create_menu_buttons()
         self.create_option_buttons()
         self.create_principal_bar()
         self.create_second_bar()
         self.slide_init()
-        
+
+#======================================= TESTING FUNCTIONS ===================#        
     def create_root_container(self):
         """ Each hydv window need a root container """
         self.javascript('Tools.Create_root_container();')

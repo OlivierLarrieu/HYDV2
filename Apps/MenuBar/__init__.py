@@ -11,17 +11,34 @@ from gi.repository import GLib
 from HydvCore import Hydv_Listner, Hydv_Screen_Utils, Hydv_Stage, Hydv_Button
 from Apps.MenuBar import MenuBarBus
 import gui
-
-
+import dbus
+import time
 realpath = GLib.get_current_dir()
 
 class MenuBar_Actions():
     """ ================================== """
     """ All MenuBar actions goes here only """
     """ ================================== """
+        
     def leave(self):
+        self.BusService.stop()
         Gtk.main_quit()
 
+    def open_appswindow(self):
+        bus = dbus.SessionBus()
+        bus_service = bus.get_object('org.hydv2.appswindow', '/org/hydv2/appswindow')
+        print self.appswindowstate
+        if not self.appswindowstate:
+            show = bus_service.get_dbus_method('show', 'org.hydv2.appswindow')
+            self.appswindowstate = True
+        else:
+            show = bus_service.get_dbus_method('hide', 'org.hydv2.appswindow')
+            self.appswindowstate = False
+
+        screen_height = self.Hydv_Screen_Utils.get_screen_height()
+        y_position = screen_height - self.height
+        show(0, y_position)
+        
     def bottom_position(self):
         screen_height = self.Hydv_Screen_Utils.get_screen_height()
         y_position = screen_height - self.height
@@ -58,7 +75,8 @@ class MenuBar_Actions():
         self.closeall()
         self.stage3.slide(2000, 1, -self.width)
         self.stage4.slide(2000, 1, -self.width)
-    
+        
+        
 class MenuBar(object, Hydv_Listner, MenuBar_Actions):
     """ =========================== """
     """ MenuBar Element Constructor """
@@ -68,7 +86,7 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         """ initialise the Window with the embeded webview """
         self.is_init = False
         self.root_container = False
-        
+        self.appswindowstate = False
         self.Hydv_Screen_Utils = Hydv_Screen_Utils()
         self.width = self.Hydv_Screen_Utils.get_screen_width()
         self.height = 30
@@ -92,13 +110,15 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         self.javascript = getattr(self.Window.view, "execute_script")
 
         #=== Each Hydv Window has its own communication bus
-        GLib.timeout_add(400, MenuBarBus.BusService, self.Window)
-
+        #GLib.timeout_add(400, MenuBarBus.BusService, self.Window)
+        self.BusService = MenuBarBus.Service(self.Window)
+        self.BusService.start()
+        #=== Start the AppsWindow
     def on_view_init(self, action):
         """ Override from Hydv_Listner.on_view_init """
         """ Action here are executed on the View initialisation only """
         # Create the Root container
-        self.create_root_container()
+        self.create_root_container(self.width, self.height)
 
         self.create_menu_buttons()
         self.create_option_buttons()
@@ -107,9 +127,9 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         self.slide_init()
 
 #======================================= TESTING FUNCTIONS ===================#        
-    def create_root_container(self):
+    def create_root_container(self, width, height):
         """ Each hydv window need a root container """
-        self.javascript('Tools.Create_root_container();')
+        self.javascript('Tools.Create_root_container("'+str(width)+'","'+str(height)+'");')
         self.root_container = True
 
     def create_principal_bar(self):
@@ -120,14 +140,15 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
 
     def create_second_bar(self):
         self.stage4 = Hydv_Stage(self.javascript, self.width-self.stage1.width, self.height, 4, 800, "stage")
-        self.button_test2 = Hydv_Button(self.javascript , "apps", 100, 20, 10, "btn")
-        self.button_test2.onclick('self.slide_init()')
-        self.stage4.add(self.button_test2)
+        for i in range(10):
+            button_test2 = Hydv_Button(self.javascript , "apps"+str(i), 50, 20, i*20, "btn")
+            button_test2.onclick('self.slide_init()')
+            self.stage4.add(button_test2)
 
     def create_menu_buttons(self):
         self.stage1 = Hydv_Stage(self.javascript, 330, self.height, 1, 1000, "left_stage")
         self.button_application = Hydv_Button(self.javascript , "apps", 100, 20, 1, "btn")
-        self.button_application.onclick('self.slide_init()')
+        self.button_application.onclick('self.open_appswindow()')
 
         self.button_magic = Hydv_Button(self.javascript, "magic", 100, 20, 2, "btn")
         self.button_magic.onclick('self.slide_next()')

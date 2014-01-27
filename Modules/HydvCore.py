@@ -99,7 +99,35 @@ class Hydv_Stage(object):
     def show(self):
         self.javascript('Tools.show_stage("'+ self.id +'");')        
 
-class Hydv_Button(object):# Hydv_Button(self.javascript, 100, self.height, 1, 500, "btn")
+class Hydv_Div(object):
+    def __init__(self, javascript_context, text, width, height, number, classname):
+        self.text = text
+        self.width = width
+        self.height = height
+        self.classname = classname
+        self.id = "div_" + str(number)
+        self.javascript = javascript_context
+        self._create_div()
+
+    def _create_div(self):
+        self.javascript('Tools.Create_Div("'+self.text+'","'
+                                               +str(self.width)+'","'
+                                               +str(self.height)+'","'
+                                               +self.id+'","'
+                                               +self.classname+'");')
+    def add(self, element):
+        self.javascript('Tools.Div_add("'+self.id+'","'+str(element.id)+'");')
+
+    def onclick(self, action):
+        self.javascript('Tools.Connect_Onclick("'+action+'","'+self.id+'");')
+
+    def onmouseover(self, action):
+        self.javascript('Tools.Connect_Onmouseover("'+action+'","'+self.id+'");')
+
+    def onmouseout(self, action):
+        self.javascript('Tools.Connect_Onmouseout("'+action+'","'+self.id+'");')
+
+class Hydv_Button(object):
     def __init__(self, javascript_context, text, width, height, number, classname):
         self.text = text
         self.width = width
@@ -117,23 +145,28 @@ class Hydv_Button(object):# Hydv_Button(self.javascript, 100, self.height, 1, 50
                                                +self.classname+'");')
 
     def onclick(self, action):
-        self.javascript('Tools.Connect_Button_Onclick("'+action+'","'+self.id+'");')
+        self.javascript('Tools.Connect_Onclick("'+action+'","'+self.id+'");')
 
     def onmouseover(self, action):
-        self.javascript('Tools.Connect_Button_Onmouseover("'+action+'","'+self.id+'");')
+        self.javascript('Tools.Connect_Onmouseover("'+action+'","'+self.id+'");')
 
     def onmouseout(self, action):
-        self.javascript('Tools.Connect_Button_Onmouseout("'+action+'","'+self.id+'");')
+        self.javascript('Tools.Connect_Onmouseout("'+action+'","'+self.id+'");')
 
-class Hydv_Icon(object):
-    def __init__(self, javascript_context, width, height, number, zindex, classname):
+class Hydv_Icon(object):#self.javascript, 20, 20, i, "/usr/share/icons/oxygen/48x48/apps/accessories-calculator.png", ""
+    def __init__(self, javascript_context, width, height, number, path, classname):
         self.width = width
         self.height = height
-        self.zindex = str(zindex)
+        self.path = path
         self.classname = classname
         self.id = "icon_" + str(number)
         self.javascript = javascript_context
         self._create_icon()
 
-    def _create_icon(self):
-        pass
+    def _create_icon(self):#width, height, id, path, classname
+        self.javascript('Tools.Create_Icon("'+str(self.width)+'","'
+                                               +str(self.height)+'","'
+                                               +self.id+'","'
+                                               +self.path+'","'
+                                               +self.classname+'");')
+

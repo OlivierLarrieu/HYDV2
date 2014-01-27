@@ -3,6 +3,7 @@
 
 import dbus.service
 import glib as GLib
+from dbus.mainloop.glib import DBusGMainLoop
 
 class BusService(dbus.service.Object):
     # Dbus service to communicate with MenuBar
@@ -17,7 +18,18 @@ class BusService(dbus.service.Object):
             pass 
         
     @dbus.service.method('org.hydv2.menubar')
-    def test(self, position):
-        self.MenuBarWindow.view.execute_script('Tools.Send("self.open_shutdow()");')
-        print "here"
+    def test(self):
+        self.MenuBarWindow.view.execute_script('Tools.Send("self.closeall()");')
 
+class Service(object):
+    def __init__(self, MenuBarWindow):
+        DBusGMainLoop(set_as_default=True)
+        myservice = BusService(MenuBarWindow)
+
+    def start(self):
+        self.main_loop = GLib.MainLoop()
+        self.main_loop.run()
+
+    def stop(self):
+        self.main_loop.quit()
+        return True

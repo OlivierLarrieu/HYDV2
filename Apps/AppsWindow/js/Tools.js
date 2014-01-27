@@ -156,7 +156,6 @@ Tools.Create_Icon = function(width, height, id, path, classname){
     new_icon.style.top = "0px";
     new_icon.style.left = "0px";
     new_icon.style.float = "left";
-    new_icon.style.border = "solid 1px #000";
     new_icon.style.position = "relative";
     new_icon.style.visibility = "hidden";
     new_icon.src = path;

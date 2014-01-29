@@ -56,11 +56,47 @@ class Hydv_Listner():
 
 
 
+class HydvWidgets(object):
+    def __init__(self):
+        self._stage_counter = 0
+        self._div_counter = 0
+        self._button_counter = 0
+        self._icon_counter = 0
+        self._header_counter = 0
+        self._footer_counter = 0
+
+    def Hydv_Stage(self, javascript_context, width, height, zindex, classname):
+        self._stage_counter += 1
+        print self._stage_counter
+        return Hydv_Stage(javascript_context, width, height, self._stage_counter, zindex, classname)
+        
+    def Hydv_Div(self, javascript_context, text, width, height, classname):
+        self._div_counter += 1
+        return Hydv_Div(javascript_context, text, width, height, self._div_counter, classname)
+
+    def Hydv_Button(self, javascript_context, text, width, height, classname):
+        self._button_counter += 1
+        return Hydv_Button(javascript_context, text, width, height, self._button_counter, classname)
+
+    def Hydv_Icon(self, javascript_context, width, height, path, classname):
+        self._icon_counter += 1
+        return Hydv_Icon(javascript_context, width, height, self._icon_counter, path, classname)
+
+    def Hydv_Header(self, javascript_context):
+        self._header_counter += 1
+        return Hydv_Header(javascript_context)
+    
+    def Hydv_Footer(self, javascript_context):
+        self._footer_counter += 1
+        return Hydv_Footer(javascript_context)
+
 class Hydv_Stage(object):
     """ ============================================================== """
     """ A stage is a container for embed application in HydvWindow     """
     """ A window may have more than one stage.                         """
     """ ============================================================== """
+
+    #print "__INIT stage__",self._stage_counter
     def __init__(self, javascript_context, width, height, number, zindex, classname):
         self.width = width
         self.height = height
@@ -144,6 +180,9 @@ class Hydv_Button(object):
                                                +self.id+'","'
                                                +self.classname+'");')
 
+    def add(self, element):
+        self.javascript('Tools.Button_add("'+self.id+'","'+str(element.id)+'");')
+
     def onclick(self, action):
         self.javascript('Tools.Connect_Onclick("'+action+'","'+self.id+'");')
 
@@ -153,7 +192,7 @@ class Hydv_Button(object):
     def onmouseout(self, action):
         self.javascript('Tools.Connect_Onmouseout("'+action+'","'+self.id+'");')
 
-class Hydv_Icon(object):#self.javascript, 20, 20, i, "/usr/share/icons/oxygen/48x48/apps/accessories-calculator.png", ""
+class Hydv_Icon(object):
     def __init__(self, javascript_context, width, height, number, path, classname):
         self.width = width
         self.height = height
@@ -163,10 +202,32 @@ class Hydv_Icon(object):#self.javascript, 20, 20, i, "/usr/share/icons/oxygen/48
         self.javascript = javascript_context
         self._create_icon()
 
-    def _create_icon(self):#width, height, id, path, classname
+    def _create_icon(self):
         self.javascript('Tools.Create_Icon("'+str(self.width)+'","'
                                                +str(self.height)+'","'
                                                +self.id+'","'
                                                +self.path+'","'
                                                +self.classname+'");')
+
+class Hydv_Header(object):
+    def __init__(self, javascript_context):
+        self.javascript = javascript_context
+        self._create_header()
+
+    def _create_header(self):
+        self.javascript('Tools.Create_Header()')
+
+    def add(self, element):
+        self.javascript('Tools.Header_add("'+str(element.id)+'");')
+
+class Hydv_Footer(object):
+    def __init__(self, javascript_context):
+        self.javascript = javascript_context
+        self._create_footer()
+
+    def _create_footer(self):
+        self.javascript('Tools.Create_Footer()')
+
+    def add(self, element):
+        self.javascript('Tools.Footer_add("'+str(element.id)+'");')
 

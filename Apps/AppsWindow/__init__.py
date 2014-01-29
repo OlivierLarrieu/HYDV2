@@ -8,7 +8,9 @@ import os
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from HydvCore import Hydv_Listner, Hydv_Screen_Utils, Hydv_Stage, Hydv_Button, Hydv_Div, Hydv_Icon
+from HydvCore import Hydv_Listner, Hydv_Screen_Utils
+from HydvCore import HydvWidgets
+HydvWidgets = HydvWidgets()
 from Apps.AppsWindow import AppsWindowBus
 
 import AppsManager
@@ -25,28 +27,20 @@ class AppsWindow_Actions():
         Gtk.main_quit()
 
     def show_category(self, category):
-        print category
         self.javascript('$(".apps_button").hide()')
         self.javascript('$(".'+category+'").fadeIn()')
         
     def launch_command(self, command):
-        print "here"
         os.system(command+" &")
 
-    def bottom_position(self):
-        screen_height = self.Hydv_Screen_Utils.get_screen_height()
-        y_position = screen_height - 60
-        self.Window.move(0, 600)
-        self.screen_position = "bottom"""
+    def load_categories(self):
+        applications_instance = AppsManager.Apps()
+        return applications_instance.get_category()
 
-    def top_position(self):
-        self.Window.move(0, 0)
-        self.screen_position = "top"
+    def load_apps(self, category):
+        applications_instance = AppsManager.Apps()
+        return applications_instance.get_apps(category)
 
-
-    def open_nautilus(self):
-        os.system('nautilus &')
-        return True
 
     def slide_init(self):
         self.javascript('$("#stage_1").fadeIn(200)')
@@ -91,66 +85,78 @@ class AppsWindow(object, Hydv_Listner, AppsWindow_Actions):
         self.javascript = getattr(self.Window.view, "execute_script")
 
         #=== Each Hydv Window has its own communication bus
-        #GLib.timeout_add(400, AppsWindowBus.BusService, self.Window)
         self.BusService = AppsWindowBus.Service(self.Window)
         self.BusService.start()
 
     def on_view_init(self, action):
         """ Override from Hydv_Listner.on_view_init """
         """ Action here are executed on the View initialisation only """
-        # Create the Root container
-
-        
+        # Create the Root container        
         self.create_root_container(self.width, self.height)
-        self.javascript('Tools.Create_Header()')
-        self.javascript('Tools.Create_Footer()')
+        self.create_apps_stage()
+        self.create_second_stage()
 
-        self.stage_principal = Hydv_Stage(self.javascript, self.width-11, self.height-40, 1, 800, "black_stage")
-        self.stage = Hydv_Stage(self.javascript, "98%", 225, 2, 800, "stage")
-        counter = 0
-        for cat in self.load_categories():        
-            button = Hydv_Button(self.javascript , cat[0], 100, 20, counter, "btn")
-            button.onclick("self.show_category('cat_%s')"%counter)
-            self.stage_principal.add(button)
-            
-        
-            category_indice = counter
-            for i in self.load_apps(cat[0]):
-                print 'category_indice',"apps_button cat_%s"%category_indice
-                self.div_1 = Hydv_Div(self.javascript , "", "96%", 30, counter, "apps_button cat_%s"%category_indice)
-                self.div = Hydv_Div(self.javascript , "%s"%i['name'], "", "", counter+1*100, "")
-                #print i['icon']
-                find_icon = AppsManager.IconParser()
-                icon = find_icon.findicon(i['icon'])
-
-                icon = Hydv_Icon(self.javascript, 30, 30, counter, icon, "")
-                self.div_1.add(icon)
-                self.div_1.add(self.div)
-                self.div_1.onclick("self.launch_command('%s')"%i['command'])
-                self.stage.add(self.div_1)
-                counter += 1
-
-        self.stage_principal.add(self.stage)
-        self.stage_down = Hydv_Stage(self.javascript, "34%", 35, 15, 800, "black_stage")
-        self.stage_down2 = Hydv_Stage(self.javascript, "60%", 50, 16, 800, "stage")
-        button = Hydv_Button(self.javascript , "next", 100, 24, counter+1, "btn")
-        button.onclick("self.slide_next()")
-        self.stage_down.add(button)
-        self.stage_principal.add(self.stage_down2)
-        self.stage_principal.add(self.stage_down)
-        self.stage2 = Hydv_Stage(self.javascript, self.width, self.height, 3, 800, "black_stage")
-        self.button_test2 = Hydv_Button(self.javascript , "apps", 100, 20, 10, "btn")
-        self.button_test2.onclick('self.slide_init()')
-        self.stage2.add(self.button_test2)
     def create_root_container(self, width, height):
         """ Each hydv window need a root container """
         self.javascript('Tools.Create_root_container("'+str(width)+'","'+str(height)+'");')
         self.root_container = True
 
-    def load_categories(self):
-        applications_instance = AppsManager.Apps()
-        return applications_instance.get_category()
+    def bottom_position(self):
+        screen_height = self.Hydv_Screen_Utils.get_screen_height()
+        y_position = screen_height - 60
+        self.Window.move(0, 600)
+        self.screen_position = "bottom"""
 
-    def load_apps(self, category):
-        applications_instance = AppsManager.Apps()
-        return applications_instance.get_apps(category)
+    def top_position(self):
+        self.Window.move(0, 0)
+        self.screen_position = "top"
+
+    def create_apps_stage(self):
+        # Header
+        header = HydvWidgets.Hydv_Header(self.javascript)
+        # Footer
+        footer = HydvWidgets.Hydv_Footer(self.javascript)
+        # Stage principal
+        self.stage_principal = HydvWidgets.Hydv_Stage(self.javascript, self.width, self.height-40, 800, "stage")
+        self.stage = HydvWidgets.Hydv_Stage(self.javascript, "98%", 250, 800, "apps_button_stage")
+        category_indice = 0
+        for cat in self.load_categories():        
+            button = HydvWidgets.Hydv_Button(self.javascript , "", 30, 30, "btn")
+            icon = HydvWidgets.Hydv_Icon(self.javascript, 30, 30, cat[1], "cat_icon")
+            button.add(icon)
+            button.onclick("self.show_category('cat_%s')"%category_indice)
+            self.stage_principal.add(button)
+            
+        
+
+            for i in self.load_apps(cat[2]):
+                print 'category_indice',"apps_button cat_%s"%category_indice
+                self.div_1 = HydvWidgets.Hydv_Div(self.javascript , "", "96%", 30, "apps_button cat_%s"%category_indice)
+                self.div = HydvWidgets.Hydv_Div(self.javascript , "%s"%i['name'], "", "", "")
+                #print i['icon']
+                find_icon = AppsManager.IconParser()
+                icon = find_icon.findicon(i['icon'])
+
+                icon = HydvWidgets.Hydv_Icon(self.javascript, 30, 30, icon, "")
+                self.div_1.add(icon)
+                self.div_1.add(self.div)
+                self.div_1.onclick("self.launch_command('%s')"%i['command'])
+                self.stage.add(self.div_1)
+            category_indice += 1                
+
+        self.stage_principal.add(self.stage)
+
+        #self.stage_down = HydvWidgets.Hydv_Stage(self.javascript, "34%", 35, 800, "black_stage")
+        #self.stage_down2 = HydvWidgets.Hydv_Stage(self.javascript, "60%", 50, 800, "stage")
+        button = HydvWidgets.Hydv_Button(self.javascript , "next", 50, 20, "btn")
+        button.onclick("self.slide_next()")
+        #self.stage_down.add(button)
+        #footer.add(self.stage_down2)
+        footer.add(button)
+
+    def create_second_stage(self):
+        self.stage2 = HydvWidgets.Hydv_Stage(self.javascript, self.width, self.height, 800, "stage")
+        self.button_test2 = HydvWidgets.Hydv_Button(self.javascript , "apps", 100, 20, "btn")
+        self.button_test2.onclick('self.slide_init()')
+        self.stage2.add(self.button_test2)
+

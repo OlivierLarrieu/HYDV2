@@ -36,6 +36,12 @@ Tools.Create_Header = function(){
     Tools.Header.className = "header";
     Tools.container.appendChild(Tools.Header);
 }
+Tools.Header_add = function(element_id){
+    element = document.getElementById(element_id);
+    element.style.visibility = "visible";
+    Tools.Header.appendChild(element);
+}
+
 Tools.Create_Footer = function(){
     Tools.Footer = document.createElement('div');
     Tools.Footer.id = "header";
@@ -47,6 +53,11 @@ Tools.Create_Footer = function(){
     Tools.Footer.style.zIndex = "10000";
     Tools.Footer.className = "footer";
     Tools.container.appendChild(Tools.Footer);
+}
+Tools.Footer_add = function(element_id){
+    element = document.getElementById(element_id);
+    element.style.visibility = "visible";
+    Tools.Footer.appendChild(element);
 }
 
 Tools.Create_stage = function(width, height, id, zindex, classname){    
@@ -109,6 +120,14 @@ Tools.Create_Button = function(text, width, height, id, classname){
     document.body.appendChild(new_button);
     return true   
 }
+Tools.Button_add = function(button_id, element_id){
+    element = document.getElementById(element_id);
+    button = document.getElementById(button_id);
+    button.appendChild(element);
+    element.style.visibility = "visible";
+
+}
+
 Tools.Connect_Onclick = function(action, id){
     button = document.getElementById(id);
     button.onclick = function(){

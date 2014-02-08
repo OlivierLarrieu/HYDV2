@@ -5,18 +5,19 @@ __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
 import os
+import dbus
+import time
+import HydvWindow
 from gi.repository import Gtk
 from gi.repository import GLib
 
 from HydvCore import Hydv_Listner, Hydv_Screen_Utils
 from HydvCore import HydvWidgets
-HydvWidgets = HydvWidgets()
 from Apps.MenuBar import MenuBarBus
-import gui
-import dbus
-import time
-realpath = GLib.get_current_dir()
 
+HydvWidgets = HydvWidgets()
+realpath = GLib.get_current_dir()
+print realpath
 class MenuBar_Actions():
     """ ================================== """
     """ All MenuBar actions goes here only """
@@ -96,7 +97,7 @@ class MenuBar(object, MenuBar_Actions):
         self.is_above = True
         self.window_title = 'MenuBar'
         # Construct the window
-        self.Window = gui.HyWindow(self,
+        self.Window = HydvWindow.HyWindow(self,
                                    self.width,
                                    self.height,
                                    html_file,
@@ -126,7 +127,7 @@ class MenuBar(object, MenuBar_Actions):
         self.create_principal_bar()
         self.create_second_bar()
         self.slide_init()
-
+        self.Window.show_all()
 #======================================= TESTING FUNCTIONS ===================#        
     def create_root_container(self, width, height):
         """ Each hydv window need a root container """
@@ -155,10 +156,17 @@ class MenuBar(object, MenuBar_Actions):
         self.button_magic.onclick('slide_next')
         #self.button_magic.onmouseover('self.openall()')
         #self.button_magic.onmouseout('self.closeall()')
+        print realpath + 'Apps/AppsWindow/medias/icons/add.png'
+        icon = HydvWidgets.Hydv_Icon(self.javascript, 20, 15, realpath + '/Apps/AppsWindow/medias/icons/add.png', "menu_button")
+        self.div_1 = HydvWidgets.Hydv_Div(self.javascript , "", 20, 20, "btn")
+        self.separator1 = HydvWidgets.Hydv_Div(self.javascript , "", 10, 30, "")
+        self.separator2 = HydvWidgets.Hydv_Div(self.javascript , "", 50, 30, "")
         self.button_hybryde = HydvWidgets.Hydv_Button(self.javascript, "hybryde", 100, 20, "btn")
-        self.button_hybryde.onclick('openall')
-
-        self.stage1.add(self.button_application)
+        self.div_1.add(icon)
+        self.div_1.onclick('open_appswindow')
+        self.stage1.add(self.separator1)
+        self.stage1.add(self.div_1)
+        self.stage1.add(self.separator2)
         self.stage1.add(self.button_magic)
         self.stage1.add(self.button_hybryde)
 

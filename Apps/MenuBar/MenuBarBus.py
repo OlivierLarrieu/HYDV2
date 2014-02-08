@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+from gi.repository import GLib
 import dbus.service
-import glib as GLib
 from dbus.mainloop.glib import DBusGMainLoop
 
 class BusService(dbus.service.Object):

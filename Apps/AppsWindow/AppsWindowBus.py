@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+
+from gi.repository import GLib
 import dbus.service
-import glib as GLib
 from dbus.mainloop.glib import DBusGMainLoop
+
 GLib.threads_init()
+
 class BusService(dbus.service.Object):
     # Dbus service to communicate with AppsWindow
     def __init__(self, AppsWindow):
@@ -19,7 +22,8 @@ class BusService(dbus.service.Object):
         
     @dbus.service.method('org.hydv2.appswindow')
     def show(self, x, y):
-        self.AppsWindow.show()
+        self.AppsWindow.realize()
+        self.AppsWindow.show_all()
         self.AppsWindow.move(x, y-self.AppsWindow.get_size()[1])
 
     @dbus.service.method('org.hydv2.appswindow')

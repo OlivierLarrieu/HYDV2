@@ -5,8 +5,8 @@ import sys
 import cairo
 from gi.repository import Gtk 
 from gi.repository import Gdk 
-from gi.repository import WebKit
 from gi.repository import GLib
+from gi.repository import WebKit
 
 GLib.threads_init()
 screen_x , screen_y = Gdk.Screen.width(), Gdk.Screen.height()
@@ -68,8 +68,6 @@ class View(WebKit.WebView):
              browser_settings.set_property(sets, False)
            
         self.set_settings(browser_settings)
-
-
         
         self.connect("title-changed", connected_function, caller_instance)
         self.connect("navigation-policy-decision-requested",
@@ -90,7 +88,8 @@ class View(WebKit.WebView):
             self.stop_loading()
 
 class HyWindow(Gtk.Window):
-    def __init__(self, caller_instance, x, y, url, connected_function, type_int, above_value, title):
+    def __init__(self, caller_instance, x, y, url,
+                 connected_function, type_int, above_value, title):
         super(HyWindow, self).__init__()
         self.caller_instance = caller_instance
         self.view = View(x, y, url, connected_function, self.caller_instance)
@@ -115,8 +114,7 @@ class HyWindow(Gtk.Window):
 
         self.connect("destroy", self.leave)       
         self.connect("draw", self.area_draw)
-        self.realize()
-        self.show_all()
+        
 
     def area_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
@@ -126,5 +124,3 @@ class HyWindow(Gtk.Window):
 
     def leave(self, ARG):
         Gtk.main_quit()
-    
-

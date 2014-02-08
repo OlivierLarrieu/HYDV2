@@ -4,7 +4,6 @@
 import os
 import locale
 from gi.repository import GLib
-realpath = GLib.get_current_dir()
 
 class HydvDesktopEntries(object):
     """
@@ -86,8 +85,14 @@ class HydvDesktopEntries(object):
 
     @classmethod
     def findicon(cls, icon_name):
-        usr_share_icons = os.listdir('/usr/share/icons/')  
-        usr_share_pixmaps = os.listdir('/usr/share/pixmaps/')      
+        realpath = os.path.dirname(__file__)
+        base_category_icons = os.listdir(realpath + "/base/categories/")
+        for elem in base_category_icons:
+            if os.path.isfile(realpath + "/base/categories/"+elem):
+                if elem.split('.')[0] == icon_name:
+                    return realpath + "/base/categories/" +elem
+
+        usr_share_icons = os.listdir('/usr/share/icons/')                
         for elem in usr_share_icons:
             if os.path.isdir("/usr/share/icons/"+elem):
                 if os.path.isdir("/usr/share/icons/"+elem+"/48x48/"):
@@ -97,8 +102,8 @@ class HydvDesktopEntries(object):
                         for icon in tmp_list:
                             if icon.split('.')[0] == icon_name:
                                 del usr_share_icons
-                                del usr_share_pixmaps
                                 return "/usr/share/icons/"+elem+"/48x48/"+directory+"/"+icon
+        usr_share_pixmaps = os.listdir('/usr/share/pixmaps/')
         for elem in usr_share_pixmaps:
             if  os.path.isfile('/usr/share/pixmaps/'+elem):
                 if elem.split('.')[0] == icon_name:
@@ -108,5 +113,6 @@ class HydvDesktopEntries(object):
             if  os.path.isfile('/usr/share/icons/'+elem):
                 if elem.split('.')[0] == icon_name:
                     return '/usr/share/icons/'+elem
+
         return realpath + "/base/categories/applications-system.png"
                 

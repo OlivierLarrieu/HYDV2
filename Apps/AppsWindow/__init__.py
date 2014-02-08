@@ -8,12 +8,10 @@ import os
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from HydvCore import Hydv_Listner, Hydv_Screen_Utils
+import HydvWindow
 from HydvCore import HydvWidgets
-
+from HydvCore import Hydv_Listner, Hydv_Screen_Utils
 from Apps.AppsWindow import AppsWindowBus
-
-import gui
 
 GLib.threads_init()
 realpath = GLib.get_current_dir()
@@ -58,7 +56,7 @@ class AppsWindow(object, AppsWindow_Actions):
         self.is_above = True
         self.window_title = 'AppsWindow'
         # Construct the window
-        self.Window = gui.HyWindow(self,
+        self.Window = HydvWindow.HyWindow(self,
                                    self.width,
                                    self.height,
                                    html_file,
@@ -91,6 +89,7 @@ class AppsWindow(object, AppsWindow_Actions):
         stage = Applications.Stage(self)
         from Stages import SysInfos
         sysinfo = SysInfos.Stage(self)
+        #self.Window.show_all()
 
     def create_root_container(self, width, height):
         """ Each hydv window need a root container """

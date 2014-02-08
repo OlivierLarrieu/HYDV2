@@ -3,12 +3,13 @@
 
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
+
+import os
 from HydvCore import Hydv_Listner
 from HydvCore import HydvWidgets
+from HydvMenu import HydvDesktopEntries
+
 HydvWidgets = HydvWidgets()
-from AppsManager import Apps, IconParser
-from xdg_test import HydvDesktopEntries
-import os
 
 class Stage_Actions():
     """ ================================== """
@@ -37,13 +38,14 @@ class Stage(object, Stage_Actions):
         keylist = Apps.keys()
         keylist.sort()
         for cat in keylist:        
+           
             button = caller.HydvWidgets.Hydv_Button(self.javascript , "", 30, 30, "btn")
-            icon = caller.HydvWidgets.Hydv_Icon(self.javascript, 30, 30, HydvDesktopEntries.findicon(Apps[cat]), "cat_icon")
+            icon = caller.HydvWidgets.Hydv_Icon(self.javascript, 30, 30, HydvDesktopEntries.findicon(cat), "cat_icon")
             button.add(icon)
             button.onclick("show_category('cat_%s')"%category_indice)
             self.stage_category.add(button)
             t = Apps[cat]
-            print t.sort()
+            t.sort()
             for i in t:
                 self.div_1 = caller.HydvWidgets.Hydv_Div(self.javascript , "", "85%", 30, "apps_button cat_%s"%category_indice)
                 self.div = caller.HydvWidgets.Hydv_Div(self.javascript , "%s"%i[i.keys()[0]]['name'], "85%", "", "")

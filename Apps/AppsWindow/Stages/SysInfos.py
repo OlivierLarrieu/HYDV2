@@ -3,15 +3,18 @@
 
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
+
+import os
+import psutil
+import threading
+from gi.repository import GLib
+
 from HydvCore import Hydv_Listner
 from HydvCore import HydvWidgets
 HydvWidgets = HydvWidgets()
-import AppsManager
-import os
-import threading
-import psutil
-from gi.repository import GLib
+
 GLib.threads_init()
+
 class Stage_Actions():
     """ ================================== """
     """ All Stage actions goes here only """

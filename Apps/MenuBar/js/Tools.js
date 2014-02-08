@@ -36,17 +36,28 @@ Tools.Create_Header = function(){
     Tools.Header.className = "header";
     Tools.container.appendChild(Tools.Header);
 }
+Tools.Header_add = function(element_id){
+    element = document.getElementById(element_id);
+    element.style.visibility = "visible";
+    Tools.Header.appendChild(element);
+}
+
 Tools.Create_Footer = function(){
     Tools.Footer = document.createElement('div');
     Tools.Footer.id = "header";
     Tools.Footer.style.minWidth = "100%";
-    Tools.Footer.style.minHeight = "25px";
+    Tools.Footer.style.minHeight = "35px";
     Tools.Footer.style.position = "fixed";
     Tools.Footer.style.bottom = "0px";
     Tools.Footer.style.left = "0px";
     Tools.Footer.style.zIndex = "10000";
     Tools.Footer.className = "footer";
     Tools.container.appendChild(Tools.Footer);
+}
+Tools.Footer_add = function(element_id){
+    element = document.getElementById(element_id);
+    element.style.visibility = "visible";
+    Tools.Footer.appendChild(element);
 }
 
 Tools.Create_stage = function(width, height, id, zindex, classname){    
@@ -65,6 +76,7 @@ Tools.Create_stage = function(width, height, id, zindex, classname){
     new_stage.style.position = "relative";
     new_stage.style.zIndex = zindex;
     new_stage.style.overflow = "auto";
+    new_stage.style.overflowX = "hidden"
     new_stage.className = String(classname);
     root_container = document.getElementById('root_container')
     root_container.appendChild(new_stage);
@@ -76,6 +88,7 @@ Tools.Create_Div = function(text, width, height, id, classname){
     Div.style.width = width;
     Div.style.height = height;
     Div.style.float = "left";
+    Div.style.fontSize = "10px";
     Div.id = id
     Div.innerText = text;
     Div.className = String(classname);
@@ -108,6 +121,14 @@ Tools.Create_Button = function(text, width, height, id, classname){
     document.body.appendChild(new_button);
     return true   
 }
+Tools.Button_add = function(button_id, element_id){
+    element = document.getElementById(element_id);
+    button = document.getElementById(button_id);
+    button.appendChild(element);
+    element.style.visibility = "visible";
+
+}
+
 Tools.Connect_Onclick = function(action, id){
     button = document.getElementById(id);
     button.onclick = function(){
@@ -152,17 +173,33 @@ Tools.Create_Icon = function(width, height, id, path, classname){
     new_icon = document.createElement('img');
     new_icon.style.width = width+"px";
     new_icon.style.height = height+"px";
-    new_icon.style.margin = "2px";
+    new_icon.style.margin = "0px";
     new_icon.style.top = "0px";
     new_icon.style.left = "0px";
     new_icon.style.float = "left";
-    new_icon.style.border = "solid 1px #000";
     new_icon.style.position = "relative";
     new_icon.style.visibility = "hidden";
     new_icon.src = path;
     new_icon.id = id;
     new_icon.className = classname;
     document.body.appendChild(new_icon);
+    return true   
+}
+
+Tools.Create_ProgressBar = function(width, height, id){
+    new_bar = document.createElement('div');
+    new_bar.style.width = width+"px";
+    new_bar.style.height = height+"px";
+    new_bar.style.visibility = "hidden";
+    progress = document.createElement('meter');
+    progress.style.width = width+"px";
+    progress.value = 50;
+    progress.min = 0;
+    progress.max = 100;
+    new_bar.id = id;
+    new_bar.className = "progressbar";
+    new_bar.appendChild(progress);
+    document.body.appendChild(new_bar);
     return true   
 }
 

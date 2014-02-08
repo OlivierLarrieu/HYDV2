@@ -21,6 +21,10 @@ class BusService(dbus.service.Object):
     def test(self):
         self.MenuBarWindow.view.execute_script('Tools.Send("self.closeall()");')
 
+    @dbus.service.method('org.hydv2.menubar')
+    def add_favorite_app(self, app):
+        self.MenuBarWindow.view.execute_script('Tools.add_fav_app("%s");'%app)
+
 class Service(object):
     def __init__(self, MenuBarWindow):
         DBusGMainLoop(set_as_default=True)

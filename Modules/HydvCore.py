@@ -6,20 +6,25 @@ class Hydv_Screen_Utils(object):
     """ ============================================================== """
     """ Class generic                                                  """
     """ ============================================================== """
-    def get_screen_width(self):
+
+    @classmethod
+    def get_screen_width(cls):
         screen = Gdk.Screen.get_default()
         screen_width = screen.get_width()
         return screen_width
 
-    def get_screen_height(self):
+    @classmethod
+    def get_screen_height(cls):
         screen = Gdk.Screen.get_default()
         screen_height = screen.get_height()
         return screen_height
 
-    def get_n_monitors(self):
+    @classmethod
+    def get_n_monitors(cls):
         screen = Gdk.Screen.get_default()
         monitor_number = screen.get_n_monitors()
         return monitor_number
+
 
 class Hydv_Listner():
     """ ============================================================== """
@@ -28,31 +33,40 @@ class Hydv_Listner():
     """ the action is a method or function existing in a module Action """
     """ Each view is connected to its own Hydv_Listner """
     """ ============================================================== """
-    def view_init(self, action):
+    @classmethod
+    def view_init(self, action, widget):
         """ Initialisation of the View """
-        if action == "init" and self.is_init == False:
-            self.is_init = True
-            self.on_view_init(action)
+        if action == "init":
+            widget.is_init = True
+            parent_window = widget.get_parent()
+            parent_window.caller_instance.on_view_init(action)
             return True
 
-    def evaluate_action(self, action):
+    @classmethod
+    def evaluate_action(self, action, widget, caller):
         # Interpret action from javascript
-        print action
         try:
-            method = eval(action)
-            method()
-            return True
-        except:
-            return False
-
-    def Actions(self, widget, frame, action):
-        """ Connector for a View to listen javascript events. """
-        if action != "_":
-            # First initialisation of the view
-            if not self.is_init:
-                self.view_init(action)
+            fonction = action.split('(')[0]
+            arg = action.replace(fonction, '')[1:-2].replace("'",'').replace('"','')
+            call = getattr(caller, fonction)            
+            if arg != "":
+                call(arg)
             else:
-                self.evaluate_action(action)                
+                call()
+        except:
+            pass
+
+    @classmethod
+    def Actions(self, widget, frame, action, caller):
+        """ Connector for a View to listen javascript events. """
+        print caller
+        if action != "_":
+            print "action widget.is_init", widget.is_init
+            # First initialisation of the view
+            if not widget.is_init:
+                Hydv_Listner.view_init(action, widget)
+            else:
+                Hydv_Listner.evaluate_action(action, widget, caller)                
 
 
 
@@ -64,10 +78,10 @@ class HydvWidgets(object):
         self._icon_counter = 0
         self._header_counter = 0
         self._footer_counter = 0
+        self._progressbar_counter = 0
 
     def Hydv_Stage(self, javascript_context, width, height, zindex, classname):
         self._stage_counter += 1
-        print self._stage_counter
         return Hydv_Stage(javascript_context, width, height, self._stage_counter, zindex, classname)
         
     def Hydv_Div(self, javascript_context, text, width, height, classname):
@@ -89,6 +103,10 @@ class HydvWidgets(object):
     def Hydv_Footer(self, javascript_context):
         self._footer_counter += 1
         return Hydv_Footer(javascript_context)
+
+    def Hydv_ProgressBar(self, javascript_context, width, height):
+        self._progressbar_counter += 1
+        return Hydv_ProgressBar(javascript_context, width, height, self._progressbar_counter)
 
 class Hydv_Stage(object):
     """ ============================================================== """
@@ -208,6 +226,19 @@ class Hydv_Icon(object):
                                                +self.id+'","'
                                                +self.path+'","'
                                                +self.classname+'");')
+
+class Hydv_ProgressBar(object):
+    def __init__(self, javascript_context, width, height, number):
+        self.width = width
+        self.height = height
+        self.id = "progress_" + str(number)
+        self.javascript = javascript_context
+        self._create_progressbar()
+
+    def _create_progressbar(self):
+        self.javascript('Tools.Create_ProgressBar("'+str(self.width)+'","'
+                                                    +str(self.height)+'","'
+                                                    +self.id+'");')
 
 class Hydv_Header(object):
     def __init__(self, javascript_context):

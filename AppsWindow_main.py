@@ -9,7 +9,9 @@ sys.path.append(realpath + '/Modules/')
 sys.path.append(realpath + '/Apps/')
 sys.path.append(realpath + '/Plugins/')
 
+GLib.threads_init()
 from Apps.AppsWindow import AppsWindow
 win = AppsWindow()
 
-Gtk.main()
+main_loop = GLib.MainLoop() 
+main_loop.run()        

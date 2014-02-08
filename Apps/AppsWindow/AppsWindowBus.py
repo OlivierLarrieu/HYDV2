@@ -4,7 +4,7 @@
 import dbus.service
 import glib as GLib
 from dbus.mainloop.glib import DBusGMainLoop
-
+GLib.threads_init()
 class BusService(dbus.service.Object):
     # Dbus service to communicate with AppsWindow
     def __init__(self, AppsWindow):
@@ -29,6 +29,10 @@ class BusService(dbus.service.Object):
     @dbus.service.method('org.hydv2.appswindow')
     def move(self, x, y):
         self.AppsWindow.move(x, y)
+
+    @dbus.service.method('org.hydv2.appswindow')
+    def getWindow(self, arg):
+        print arg
         
 class Service(object):
     def __init__(self, AppsWindow):

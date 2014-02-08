@@ -29,7 +29,6 @@ class MenuBar_Actions():
     def open_appswindow(self):
         bus = dbus.SessionBus()
         bus_service = bus.get_object('org.hydv2.appswindow', '/org/hydv2/appswindow')
-        print self.appswindowstate
         if not self.appswindowstate:
             show = bus_service.get_dbus_method('show', 'org.hydv2.appswindow')
             self.appswindowstate = True
@@ -79,7 +78,7 @@ class MenuBar_Actions():
         self.stage4.slide(2000, 1, -self.width)
         
         
-class MenuBar(object, Hydv_Listner, MenuBar_Actions):
+class MenuBar(object, MenuBar_Actions):
     """ =========================== """
     """ MenuBar Element Constructor """
     """ =========================== """
@@ -97,10 +96,11 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         self.is_above = True
         self.window_title = 'MenuBar'
         # Construct the window
-        self.Window = gui.HyWindow(self.width,
+        self.Window = gui.HyWindow(self,
+                                   self.width,
                                    self.height,
                                    html_file,
-                                   self.Actions, # Connecte the view signal to this Method
+                                   Hydv_Listner.Actions, # Connecte the view signal to this Method
                                    self.type_hint,
                                    self.is_above,
                                    self.window_title)
@@ -121,7 +121,6 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         """ Action here are executed on the View initialisation only """
         # Create the Root container
         self.create_root_container(self.width, self.height)
-
         self.create_menu_buttons()
         self.create_option_buttons()
         self.create_principal_bar()
@@ -137,27 +136,27 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
     def create_principal_bar(self):
         self.stage3 = HydvWidgets.Hydv_Stage(self.javascript, self.width-self.stage1.width-20, self.height, 800, "stage")
         self.button_test = HydvWidgets.Hydv_Button(self.javascript , "apps", 100, 20, "btn")
-        self.button_test.onclick('self.slide_next()')
+        self.button_test.onclick('slide_next')
         self.stage3.add(self.button_test)
 
     def create_second_bar(self):
         self.stage4 = HydvWidgets.Hydv_Stage(self.javascript, self.width-self.stage1.width, self.height, 800, "stage")
         for i in range(10):
             button_test2 = HydvWidgets.Hydv_Button(self.javascript , "apps"+str(i), 50, 20, "btn")
-            button_test2.onclick('self.slide_init()')
+            button_test2.onclick('slide_init')
             self.stage4.add(button_test2)
 
     def create_menu_buttons(self):
         self.stage1 = HydvWidgets.Hydv_Stage(self.javascript, 330, self.height, 1000, "left_stage")
         self.button_application = HydvWidgets.Hydv_Button(self.javascript , "apps", 100, 20, "btn")
-        self.button_application.onclick('self.open_appswindow()')
+        self.button_application.onclick('open_appswindow')
 
         self.button_magic = HydvWidgets.Hydv_Button(self.javascript, "magic", 100, 20, "btn")
-        self.button_magic.onclick('self.slide_next()')
+        self.button_magic.onclick('slide_next')
         #self.button_magic.onmouseover('self.openall()')
         #self.button_magic.onmouseout('self.closeall()')
         self.button_hybryde = HydvWidgets.Hydv_Button(self.javascript, "hybryde", 100, 20, "btn")
-        self.button_hybryde.onclick('self.openall()')
+        self.button_hybryde.onclick('openall')
 
         self.stage1.add(self.button_application)
         self.stage1.add(self.button_magic)
@@ -167,19 +166,19 @@ class MenuBar(object, Hydv_Listner, MenuBar_Actions):
         self.stage2 = HydvWidgets.Hydv_Stage(self.javascript, 350, self.height, 900, "left_stage")
 
         self.button_logout = HydvWidgets.Hydv_Button(self.javascript, "logout", 50, 20, "btn")
-        self.button_logout.onclick('self.leave()')
+        self.button_logout.onclick('leave')
 
         self.button_shutdown = HydvWidgets.Hydv_Button(self.javascript, "shutdown", 50, 20, "btn")
-        self.button_shutdown.onclick('self.leave()')
+        self.button_shutdown.onclick('leave')
 
         self.button_reboot = HydvWidgets.Hydv_Button(self.javascript, "reboot", 50, 20, "btn")
-        self.button_reboot.onclick('self.leave()')
+        self.button_reboot.onclick('leave')
 
         self.button_sleep = HydvWidgets.Hydv_Button(self.javascript, "sleep", 50, 20, "btn")
-        self.button_sleep.onclick('self.leave()')
+        self.button_sleep.onclick('leave')
 
         self.button_close = HydvWidgets.Hydv_Button(self.javascript, "sleep", 50, 20, "btn")
-        self.button_close.onclick('self.leave()')
+        self.button_close.onclick('leave')
 
         self.stage2.add(self.button_logout)
         self.stage2.add(self.button_shutdown)

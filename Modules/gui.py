@@ -13,7 +13,7 @@ screen_x , screen_y = Gdk.Screen.width(), Gdk.Screen.height()
 screen = Gdk.Screen()
 
 class View(WebKit.WebView):
-    def __init__(self, x, y, url, connected_function):
+    def __init__(self, x, y, url, connected_function, caller_instance):
         super(View, self).__init__()
         self.url = url
         self.set_transparent(True)
@@ -71,7 +71,7 @@ class View(WebKit.WebView):
 
 
         
-        self.connect("title-changed", connected_function)
+        self.connect("title-changed", connected_function, caller_instance)
         self.connect("navigation-policy-decision-requested",
                                           self._disable_drop)
         self.open("file://" + url)
@@ -90,9 +90,11 @@ class View(WebKit.WebView):
             self.stop_loading()
 
 class HyWindow(Gtk.Window):
-    def __init__(self, x, y, url, connected_function, type_int, above_value, title):
+    def __init__(self, caller_instance, x, y, url, connected_function, type_int, above_value, title):
         super(HyWindow, self).__init__()
-        self.view = View(x, y, url, connected_function)
+        self.caller_instance = caller_instance
+        self.view = View(x, y, url, connected_function, self.caller_instance)
+        self.view.is_init = False
         self.add(self.view)
         self.set_title(title)
         self.set_decorated(False)

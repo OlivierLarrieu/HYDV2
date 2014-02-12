@@ -5,16 +5,16 @@ __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
 import os
+import time
 from HydvCore import Hydv_Listner
-from HydvCore import HydvWidgets
 from HydvMenu import HydvDesktopEntries
 
-HydvWidgets = HydvWidgets()
 
 class Stage_Actions():
     """ ================================== """
     """ All Stage actions goes here only """
     """ ================================== """
+
     def show_category(self, category):
         self.javascript('$(".apps_button").hide();$(".add").hide()')
         self.javascript('$(".'+category+'").fadeIn()')
@@ -22,58 +22,102 @@ class Stage_Actions():
     def launch_command(self, command):
         os.system(command+" &")
 
+    def _open(self):
+        print "open"
+        #1) animate category stage on top        
+        self.stage_principal.animate(direction="left", px="0", speed=150, delay=0)
+        self.category_container.animate(direction="top", px="30", speed=150, delay=250)
+        #3) fade out applications list
+        
+
+    def _close(self):
+        print "totototottotot"
+        #1) animate category stage on top
+        self.category_container.animate(direction="top", px="-80", speed=150, delay=0)
+        #3) fade out applications list
+        self.stage_principal.animate(direction="left", px="-350", speed=150, delay=200)
+        self.javascript('Tools.Send("open_sysinfo_stage")')
+
 
 class Stage(object, Stage_Actions):
     def __init__(self, caller):
-        print self
+        self.state = "open"
+        self.caller = caller
+        print "_____________________________________________________"
         self.javascript = caller.javascript
         # Stage principal
-        self.stage_principal = caller.HydvWidgets.Hydv_Stage(self.javascript, caller.width, caller.height, 800, "stage")
+        self.stage_principal = caller.HydvWidgets_instance.Hydv_MasterStage(context=self,
+                                                                      width=caller.width,
+                                                                      height=caller.height,
+                                                                      zindex=800,
+                                                                      classname="stage", toto="re")
         # Display categories icons
-        self.stage_category = caller.HydvWidgets.Hydv_Stage(self.javascript, caller.width, 80, 800, "black_stage")
+        self.category_container = caller.HydvWidgets_instance.Hydv_Stage(width=caller.width,
+                                                                         height=80,
+                                                                         zindex=800,
+                                                                         classname="black_stage")
         # Display list off applications
-        self.stage = caller.HydvWidgets.Hydv_Stage(self.javascript, "98%", 245, 700, "apps_button_stage")
+        self.stage = caller.HydvWidgets_instance.Hydv_Stage(width="98%",
+                                                            height=245,
+                                                            zindex=700,
+                                                            classname="apps_button_stage")
         category_indice = 0
         Apps = HydvDesktopEntries.get_applications()
         keylist = Apps.keys()
         keylist.sort()
         for cat in keylist:        
            
-            button = caller.HydvWidgets.Hydv_Button(self.javascript , "", 30, 30, "btn")
-            icon = caller.HydvWidgets.Hydv_Icon(self.javascript, 30, 30, HydvDesktopEntries.findicon(cat), "cat_icon")
+            button = caller.HydvWidgets_instance.Hydv_Button(text="",
+                                                             width=30,
+                                                             height=30,
+                                                             classname="btn")
+            icon = caller.HydvWidgets_instance.Hydv_Icon(width=30,
+                                                         height=30,
+                                                         path=HydvDesktopEntries.findicon(cat),
+                                                         classname="cat_icon")
             button.add(icon)
             button.onclick("show_category('cat_%s')"%category_indice)
-            self.stage_category.add(button)
+            self.category_container.add(button)
             t = Apps[cat]
             t.sort()
             for i in t:
-                self.div_1 = caller.HydvWidgets.Hydv_Div(self.javascript , "", "85%", 30, "apps_button cat_%s"%category_indice)
-                self.div = caller.HydvWidgets.Hydv_Div(self.javascript , "%s"%i[i.keys()[0]]['name'], "85%", "", "")
-                self.add = caller.HydvWidgets.Hydv_Div(self.javascript , "", "", "", "add cat_%s"%category_indice)
+                div = caller.HydvWidgets_instance.Hydv_Div(text="",
+                                                           width="85%",
+                                                           height=30,
+                                                           classname="apps_button cat_%s"%category_indice)
+                apps_name = caller.HydvWidgets_instance.Hydv_Div(text="%s"%i[i.keys()[0]]['name'],
+                                                                 width="85%",
+                                                                 height="",
+                                                                 classname="")
+                add_button = caller.HydvWidgets_instance.Hydv_Div(text="",
+                                                                  width="",
+                                                                  height="",
+                                                                  classname="add cat_%s"%category_indice)
                 
 
-                icon = caller.HydvWidgets.Hydv_Icon(self.javascript, 30, 30, i[i.keys()[0]]['icon'], "")
-                self.div_1.add(icon)
-                self.div_1.add(self.div)
-                self.div_1.onclick("launch_command('%s')"%i[i.keys()[0]]['command'])
-                self.add.onclick("add_to_menubar('%s')"%i[i.keys()[0]]['icon'])
-                self.stage.add(self.div_1)
-                self.stage.add(self.add)
+                icon = caller.HydvWidgets_instance.Hydv_Icon(width=30,
+                                                             height=30,
+                                                             path=i[i.keys()[0]]['icon'],
+                                                             classname="")
+                div.add(icon)
+                div.add(apps_name)
+                div.onclick("launch_command('%s')"%i[i.keys()[0]]['command'])
+                add_button.onclick("add_to_menubar('%s')"%i[i.keys()[0]]['icon'])
+                self.stage.add(div)
+                self.stage.add(add_button)
             category_indice += 1                
-        self.stage_principal.add(self.stage_category )
+        self.stage_principal.add(self.category_container )
         self.stage_principal.add(self.stage)        
-        button = caller.HydvWidgets.Hydv_Button(self.javascript , "next", 50, 20, "btn")
-        button.onclick("slide_next")
-        caller.footer.add(button)
-        
+
+        apps_button = caller.HydvWidgets_instance.Hydv_Button(text="Applications",
+                                                              width=100,
+                                                              height=20,
+                                                              classname="btn")
+
+        apps_button.onclick("open_stage('%s')" %self.stage_principal.id)
+        caller.footer.add(apps_button)
+
+        self._open()
+
+        print "done"
         caller.Window.view.connect("title-changed", Hydv_Listner.Actions, self)
-
-    def load_categories(self):
-        applications_instance = AppsManager.Apps()
-        return applications_instance.get_category()
-
-    def load_apps(self, category):
-        applications_instance = AppsManager.Apps()
-        return applications_instance.get_apps(category)
-
-

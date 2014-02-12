@@ -23,6 +23,14 @@ class AppsWindow_Actions():
     def leave(self):
         Gtk.main_quit()
 
+    def open_stage(self, stage_id):
+        print "open", stage_id
+        self.HydvWidgets_instance.open_stage(stage_id)
+    
+    def close_stage(self):
+        print "close"
+        self.HydvWidgets_instance.close_current_stage()
+    
     def bottom_position(self):
         screen_height = Hydv_Screen_Utils.get_screen_height()
         y_position = screen_height - self.height - 60
@@ -34,11 +42,12 @@ class AppsWindow_Actions():
         self.screen_position = "top"
 
     def slide_init(self):
-        self.javascript('$("#stage_1").fadeIn(200)')
+        self.javascript('$("#%s").fadeIn(200)'%self.application_stage.stage_principal.id)
+        self.javascript('$("#%s").fadeOut(200)'%self.sysinfo_stage.stage_principal.id)
 
     def slide_next(self):
-        self.javascript('$("#stage_1").fadeOut(200)')
-    
+        self.javascript('$("#%s").fadeOut(200)'%self.application_stage.stage_principal.id)
+        self.javascript('$("#%s").fadeIn(200)'%self.sysinfo_stage.stage_principal.id)
 class AppsWindow(object, AppsWindow_Actions):
     """ =========================== """
     """ AppsWindow Element Constructor """
@@ -48,7 +57,6 @@ class AppsWindow(object, AppsWindow_Actions):
         """ initialise the Window with the embeded webview """
         self.is_init = False
         self.root_container = False
-        self.HydvWidgets = HydvWidgets()
         self.width = 330
         self.height = 400
         html_file = realpath + "/Apps/AppsWindow/index.html"
@@ -70,7 +78,7 @@ class AppsWindow(object, AppsWindow_Actions):
         #=== self.javascript is an alias to : self.Window.view.execute_script ===#
         #=== self.javascript execute javascript code evaluate by the view =======#
         self.javascript = getattr(self.Window.view, "execute_script")
-
+        self.HydvWidgets_instance = HydvWidgets(self.javascript)
         #=== Each Hydv Window has its own communication bus
         self.BusService = AppsWindowBus.Service(self.Window)
         self.BusService.start()
@@ -82,13 +90,13 @@ class AppsWindow(object, AppsWindow_Actions):
         # Create the Root container        
         self.create_root_container(self.width, self.height)
         # Header
-        self.header = self.HydvWidgets.Hydv_Header(self.javascript)
+        self.header = self.HydvWidgets_instance.Hydv_Header()
         # Footer
-        self.footer = self.HydvWidgets.Hydv_Footer(self.javascript)
+        self.footer = self.HydvWidgets_instance.Hydv_Footer()
         from Stages import Applications
-        stage = Applications.Stage(self)
+        self.application_stage = Applications.Stage(self)
         from Stages import SysInfos
-        sysinfo = SysInfos.Stage(self)
+        self.sysinfo_stage = SysInfos.Stage(self)
         #self.Window.show_all()
 
     def create_root_container(self, width, height):

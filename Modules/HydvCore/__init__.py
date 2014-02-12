@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 from gi.repository import Gtk, Gdk
+import sys
 
 class Hydv_Screen_Utils(object):
     """ ============================================================== """
@@ -47,6 +48,7 @@ class Hydv_Listner():
         # Interpret action from javascript
         try:
             fonction = action.split('(')[0]
+            print "fonction", fonction
             arg = action.replace(fonction, '')[1:-2].replace("'",'').replace('"','')
             call = getattr(caller, fonction)            
             if arg != "":
@@ -71,7 +73,7 @@ class Hydv_Listner():
 
 
 class HydvWidgets(object):
-    def __init__(self):
+    def __init__(self, javascript_context):
         self._stage_counter = 0
         self._div_counter = 0
         self._button_counter = 0
@@ -79,34 +81,151 @@ class HydvWidgets(object):
         self._header_counter = 0
         self._footer_counter = 0
         self._progressbar_counter = 0
+        self.javascript_context = javascript_context
+        self.master_stage_collection = []
 
-    def Hydv_Stage(self, javascript_context, width, height, zindex, classname):
+    def get_stage_collection(self):
+        return self.master_stage_collection
+
+    def open_stage(self, stage_id):
+        print "here1", stage_id
+        for stage in self.get_stage_collection():
+            print stage.state
+            print stage.stage_principal.id, stage_id
+            if stage.stage_principal.id == stage_id:
+                if stage.state != "open":
+                    self.close_current_stage()
+                    stage._open()
+                    stage.state = "open"
+
+    def close_current_stage(self):
+        print "here2"
+        for stage in self.get_stage_collection():
+            print stage.state
+            print "open"
+            stage._close()
+            stage.state = "close"
+ 
+    def Hydv_MasterStage(self, **kwargs):
+        width = kwargs['width']
+        height = kwargs['height']
+        zindex = kwargs['zindex']
+        classname = kwargs['classname']
         self._stage_counter += 1
-        return Hydv_Stage(javascript_context, width, height, self._stage_counter, zindex, classname)
+        self.master_stage_collection.append(kwargs['context'])
+        return Hydv_MasterStage(self.javascript_context, width, height, self._stage_counter, zindex, classname)
+
+    def Hydv_Stage(self, **kwargs):
+        for k in kwargs:
+            try:
+                str(kwargs[k])
+            except KeyError:
+                print "argument %s not valid."%k
+                Gtk.main_quit()
+                sys.exit(1)
+                raise
+                
+        width = kwargs['width']
+        height = kwargs['height']
+        zindex = kwargs['zindex']
+        classname = kwargs['classname']
+        self._stage_counter += 1
+        new_stage = Hydv_Stage(self.javascript_context, width, height, self._stage_counter, zindex, classname)
+        return new_stage
         
-    def Hydv_Div(self, javascript_context, text, width, height, classname):
+    def Hydv_Div(self, **kwargs):
+        width = kwargs['width']
+        height = kwargs['height']
+        text = kwargs['text']
+        classname = kwargs['classname']
+
         self._div_counter += 1
-        return Hydv_Div(javascript_context, text, width, height, self._div_counter, classname)
+        return Hydv_Div(self.javascript_context, text, width, height, self._div_counter, classname)
 
-    def Hydv_Button(self, javascript_context, text, width, height, classname):
+    def Hydv_Button(self, **kwargs):
+        width = kwargs['width']
+        height = kwargs['height']
+        text = kwargs['text']
+        classname = kwargs['classname']
+
         self._button_counter += 1
-        return Hydv_Button(javascript_context, text, width, height, self._button_counter, classname)
+        return Hydv_Button(self.javascript_context, text, width, height, self._button_counter, classname)
 
-    def Hydv_Icon(self, javascript_context, width, height, path, classname):
+    def Hydv_Icon(self, **kwargs):
+        width = kwargs['width']
+        height = kwargs['height']
+        path = kwargs['path']
+        classname = kwargs['classname']
+
         self._icon_counter += 1
-        return Hydv_Icon(javascript_context, width, height, self._icon_counter, path, classname)
+        return Hydv_Icon(self.javascript_context, width, height, self._icon_counter, path, classname)
 
-    def Hydv_Header(self, javascript_context):
+    def Hydv_Header(self):
         self._header_counter += 1
-        return Hydv_Header(javascript_context)
+        return Hydv_Header(self.javascript_context)
     
-    def Hydv_Footer(self, javascript_context):
+    def Hydv_Footer(self):
         self._footer_counter += 1
-        return Hydv_Footer(javascript_context)
+        return Hydv_Footer(self.javascript_context)
 
-    def Hydv_ProgressBar(self, javascript_context, width, height):
+    def Hydv_ProgressBar(self, **kwargs):
+        width = kwargs['width']
+        height = kwargs['height']
+
         self._progressbar_counter += 1
-        return Hydv_ProgressBar(javascript_context, width, height, self._progressbar_counter)
+        return Hydv_ProgressBar(self.javascript_context, width, height, self._progressbar_counter)
+
+class Hydv_MasterStage(object):
+    """ ============================================================== """
+    """ A stage is a container for embed application in HydvWindow     """
+    """ A window may have more than one stage.                         """
+    """ ============================================================== """
+
+    #print "__INIT stage__",self._stage_counter
+    def __init__(self, javascript_context, width, height, number, zindex, classname):
+        self.width = width
+        self.height = height
+        self.zindex = str(zindex)
+        self.classname = classname       
+        self.id = "stage_" + str(number)
+        self.javascript = javascript_context
+        self._create_stage()
+
+    def _create_stage(self):
+        self.javascript('Tools.Create_MasterStage("' + str(self.width)
+                                               + '","' 
+                                               + str(self.height)
+                                               + '","'
+                                               + self.id
+                                               + '","'
+                                               + self.zindex
+                                               + '","'
+                                               + self.classname + '");')
+
+    def add(self, element):
+        self.javascript('Tools.Stage_add("'+self.id+'","'+str(element.id)+'");')
+
+    def animate(self, **kwargs):
+        direction = kwargs['direction']
+        px = kwargs['px']
+        speed = kwargs['speed']
+        delay = kwargs['delay']
+        self.javascript('$("#%s").delay(%s).animate({"%s": "%spx"}, %s);'%(self.id, delay, direction, px, speed))
+
+    def slide(self, speed, direction, position):
+        self.javascript('Tools.slide_stage("'+ self.id +'","'+ str(speed) +'","' + str(direction) +'","' + str(position) + '");')
+
+    def fadeIn(self):
+        self.javascript('$("#%s").delay(0).fadeIn(200)'%self.id)
+
+    def fadeOut(self):
+        self.javascript('$("#%s").delay(100).fadeOut(200)'%self.id)
+
+    def hide(self):
+        self.javascript('Tools.hide_stage("'+ self.id +'");')
+    
+    def show(self):
+        self.javascript('Tools.show_stage("'+ self.id +'");')        
 
 class Hydv_Stage(object):
     """ ============================================================== """
@@ -138,20 +257,27 @@ class Hydv_Stage(object):
     def add(self, element):
         self.javascript('Tools.Stage_add("'+self.id+'","'+str(element.id)+'");')
 
+    def animate(self, **kwargs):
+        direction = kwargs['direction']
+        px = kwargs['px']
+        speed = kwargs['speed']
+        delay = kwargs['delay']
+        self.javascript('$("#%s").delay(%s).animate({"%s": "%spx"}, %s);'%(self.id, delay, direction, px, speed))
+
     def slide(self, speed, direction, position):
         self.javascript('Tools.slide_stage("'+ self.id +'","'+ str(speed) +'","' + str(direction) +'","' + str(position) + '");')
 
     def fadeIn(self):
-        self.javascript('Tools.fadeIn_stage("'+ self.id +'");')
+        self.javascript('$("#%s").delay(0).fadeIn(200)'%self.id)
 
     def fadeOut(self):
-        self.javascript('Tools.fadeOut_stage("'+ self.id +'");')
-        
+        self.javascript('$("#%s").delay(100).fadeOut(200)'%self.id)
+
     def hide(self):
-        self.javascript('Tools.hide_stage("'+ self.id +'");')
+        self.javascript('$("#'+ self.id +'").hide();')
     
     def show(self):
-        self.javascript('Tools.show_stage("'+ self.id +'");')        
+        self.javascript('$("#'+ self.id +'").show();')        
 
 class Hydv_Div(object):
     def __init__(self, javascript_context, text, width, height, number, classname):
@@ -226,6 +352,15 @@ class Hydv_Icon(object):
                                                +self.id+'","'
                                                +self.path+'","'
                                                +self.classname+'");')
+
+    def onclick(self, action):
+        self.javascript('Tools.Connect_Onclick("'+action+'","'+self.id+'");')
+
+    def onmouseover(self, action):
+        self.javascript('Tools.Connect_Onmouseover("'+action+'","'+self.id+'");')
+
+    def onmouseout(self, action):
+        self.javascript('Tools.Connect_Onmouseout("'+action+'","'+self.id+'");')
 
 class Hydv_ProgressBar(object):
     def __init__(self, javascript_context, width, height, number):

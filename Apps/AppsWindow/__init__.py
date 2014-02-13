@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
 import os
+import HydvWindow
 from gi.repository import Gtk
 from gi.repository import GLib
-
-import HydvWindow
 from HydvCore import HydvWidgets
-from HydvCore import Hydv_Listner, Hydv_Screen_Utils
 from Apps.AppsWindow import AppsWindowBus
+from HydvCore import Hydv_Listner, Hydv_Screen_Utils
 
 GLib.threads_init()
 realpath = GLib.get_current_dir()
@@ -41,19 +39,11 @@ class AppsWindow_Actions():
         self.Window.move(0, 0)
         self.screen_position = "top"
 
-    def slide_init(self):
-        self.javascript('$("#%s").fadeIn(200)'%self.application_stage.stage_principal.id)
-        self.javascript('$("#%s").fadeOut(200)'%self.sysinfo_stage.stage_principal.id)
-
-    def slide_next(self):
-        self.javascript('$("#%s").fadeOut(200)'%self.application_stage.stage_principal.id)
-        self.javascript('$("#%s").fadeIn(200)'%self.sysinfo_stage.stage_principal.id)
 class AppsWindow(object, AppsWindow_Actions):
     """ =========================== """
     """ AppsWindow Element Constructor """
     """ =========================== """
-    def __init__(self):
-        
+    def __init__(self):        
         """ initialise the Window with the embeded webview """
         self.is_init = False
         self.root_container = False
@@ -82,8 +72,7 @@ class AppsWindow(object, AppsWindow_Actions):
         #=== Each Hydv Window has its own communication bus
         self.BusService = AppsWindowBus.Service(self.Window)
         self.BusService.start()
-
-        
+       
     def on_view_init(self, action):
         """ Override from Hydv_Listner.on_view_init """
         """ Action here are executed on the View initialisation only """
@@ -93,11 +82,12 @@ class AppsWindow(object, AppsWindow_Actions):
         self.header = self.HydvWidgets_instance.Hydv_Header()
         # Footer
         self.footer = self.HydvWidgets_instance.Hydv_Footer()
+        # Activate specific applications/stage embeded in applications window
+        # TODO: use importlib for this with specifics controls
         from Stages import Applications
         self.application_stage = Applications.Stage(self)
         from Stages import SysInfos
         self.sysinfo_stage = SysInfos.Stage(self)
-        #self.Window.show_all()
 
     def create_root_container(self, width, height):
         """ Each hydv window need a root container """

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+__author__ = "Olivier LARRIEU"
+__version__ = "0.1"
 
 import os
 import locale
-from gi.repository import GLib
 
 class HydvDesktopEntries(object):
     """
@@ -38,49 +39,45 @@ class HydvDesktopEntries(object):
                          'Graphics': [],
                          'Wine': ['Wine-Programs-Accessories',],
                          }
-
         dir_list = os.listdir('/usr/share/applications')
         dic = {}
         nodisplay = False
         command = False
         for desktop_file in dir_list:
-            if desktop_file.split('.')[1] == "desktop":
-                applications_dic = {}
-                file_content = open('/usr/share/applications/'+desktop_file, 'r').readlines()
-                for line in file_content:
-                    # get application name
-                    if "Name" in line and not "TypeName" in line and not "GenericName" in line :
-                        if not 'name' in applications_dic:
-                            applications_dic['name'] = line.split('=')[1].replace('\n','')
-                    # get application command
-                    if "Exec" in line:
-                        command = True
-                        applications_dic['command'] = line.split('=')[1].replace('\n','').split('%')[0]
-                    # get application icon
-                    if "Icon" in line:
-                        icon = HydvDesktopEntries.findicon(line.split('=')[1].replace('\n',''))
-                        applications_dic['icon'] = icon
-                    # get application comment
-                    if "Comment[%s]"%language in line:
-                        applications_dic['comment'] = line.split('=')[1].replace('\n','')
-                    if "Categories" in line:
-                        category = line.replace('GNOME;','').replace('GTK;','').replace('\n','').split('=')[1].split(';')[0]
-                        # get category directory                       
-                    if "NoDisplay=true" in line:
-                        nodisplay = True
-                # Add application utils infos in category dic corresponding
-                if command:
-                    if not nodisplay:
-                        applications_dic['desktopentry'] = desktop_file
-                        for cat in CATEGORIES_DIC:
-                            if category in CATEGORIES_DIC[cat]:
-                                category = cat
-                        if not category in dic:
-                            dic[category] = []                        
-                        dic[category].append({applications_dic['name']:applications_dic, })
-                    else:
-                        nodisplay = False
+            try:
+                if desktop_file.split('.')[1] == "desktop":
+                    applications_dic = {}
+                    file_content = open('/usr/share/applications/'+desktop_file, 'r').readlines()
+                    for line in file_content:
+                        if "Name" in line and not "TypeName" in line and not "GenericName" in line :
+                            if not 'name' in applications_dic:
+                                applications_dic['name'] = line.split('=')[1].replace('\n','')
+                        if "Exec" in line:
+                            command = True
+                            applications_dic['command'] = line.split('=')[1].replace('\n','').split('%')[0]
+                        if "Icon" in line:
+                            icon = HydvDesktopEntries.findicon(line.split('=')[1].replace('\n',''))
+                            applications_dic['icon'] = icon
+                        if "Comment[%s]"%language in line:
+                            applications_dic['comment'] = line.split('=')[1].replace('\n','')
+                        if "Categories" in line:
+                            category = line.replace('GNOME;','').replace('GTK;','').replace('\n','').split('=')[1].split(';')[0]                     
+                        if "NoDisplay=true" in line:
+                            nodisplay = True
+                    if command:
+                        if not nodisplay:
+                            applications_dic['desktopentry'] = desktop_file
+                            for cat in CATEGORIES_DIC:
+                                if category in CATEGORIES_DIC[cat]:
+                                    category = cat
+                            if not category in dic:
+                                dic[category] = []                        
+                            dic[category].append({applications_dic['name']:applications_dic, })
+                        else:
+                            nodisplay = False
                     command = False
+            except:
+                pass
         return dic
 
     @classmethod
@@ -90,6 +87,7 @@ class HydvDesktopEntries(object):
         for elem in base_category_icons:
             if os.path.isfile(realpath + "/base/categories/"+elem):
                 if elem.split('.')[0] == icon_name:
+                    del base_category_icons
                     return realpath + "/base/categories/" +elem
 
         usr_share_icons = os.listdir('/usr/share/icons/')                
@@ -107,12 +105,12 @@ class HydvDesktopEntries(object):
         for elem in usr_share_pixmaps:
             if  os.path.isfile('/usr/share/pixmaps/'+elem):
                 if elem.split('.')[0] == icon_name:
-
+                    del usr_share_pixmaps
                     return '/usr/share/pixmaps/'+elem
         for elem in usr_share_icons:
             if  os.path.isfile('/usr/share/icons/'+elem):
                 if elem.split('.')[0] == icon_name:
+                    del usr_share_icons
                     return '/usr/share/icons/'+elem
 
         return realpath + "/base/categories/applications-system.png"
-                

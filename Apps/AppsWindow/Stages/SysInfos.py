@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
@@ -8,9 +7,7 @@ import os
 import psutil
 import threading
 from gi.repository import GLib
-
 from HydvCore import Hydv_Listner
-
 
 GLib.threads_init()
 
@@ -22,13 +19,11 @@ class Stage_Actions():
         pass
 
     def _open(self):
-        #1) animate category stage on top
         self.stage_principal.animate(direction="left", px=0, speed=150, delay=200)
         self.stage_menu.animate(direction="top", px="30", speed=150, delay=650)
 
     def _close(self):
-        #1) animate category stage on top  
-        print "close sysinfo"
+        self.slide_up()
         self.stage_menu.animate(direction="top", px="-10", speed=150, delay=0)
         self.stage_principal.animate(direction="left", px="-350", speed=150, delay=300)
         
@@ -46,11 +41,9 @@ class Stage_Actions():
         if not self.thread:
             self.test = Infos(self.javascript)
             self.test.start()
-            self.thread = True
-        
+            self.thread = True        
         self.stage_cpu.animate(direction="top", px="10", speed=250, delay=0)
 
-    
 class Stage(object, Stage_Actions):
     def __init__(self, caller):
         self.state = "close"
@@ -61,19 +54,12 @@ class Stage(object, Stage_Actions):
                                                                    height=caller.height,
                                                                    zindex=800,
                                                                    classname="stage")
-
         self.stage_cpu = caller.HydvWidgets_instance.Hydv_Stage(width=caller.width, height=300, zindex=800, classname="info_stage")
-
-
         cpu_percentage_by_cpu = psutil.cpu_percent(interval=0.7, percpu=True)
         for cpu in cpu_percentage_by_cpu:
             progress_bar = caller.HydvWidgets_instance.Hydv_ProgressBar(width=caller.width, height=20)
             self.stage_cpu.add(progress_bar)
-        # Display categories icons
         self.stage_menu = caller.HydvWidgets_instance.Hydv_Stage(width=caller.width, height=30, zindex=1000, classname="black_stage")
-        
-        
-        # Display list off applications
         self.stage_principal.add(self.stage_menu )
         self.stage_principal.add(self.stage_cpu )
         button = caller.HydvWidgets_instance.Hydv_Button(text="up", width=50, height=20, classname="btn")
@@ -104,7 +90,6 @@ class Infos(threading.Thread):
     def run(self):
         """Start the thread."""
         self.running = True
-        print "ENTER THREAD"
         #get partitions
         partitions = psutil.disk_partitions() 
         chaine = ""
@@ -113,36 +98,16 @@ class Infos(threading.Thread):
             "+elem.mountpoint+" "+elem.fstype+" \
             "+str(psutil.disk_usage(elem.mountpoint).percent)+"%"
         memorie_total = os.popen('mem=$(free -m);echo $mem|cut -d ":" -f2|cut -d " " -f2').readline()
-        print memorie_total
-        """GLib.idle_add(self.info_window.web.execute_script,
-                      'a='+str(memorie_total))
-        GLib.idle_add(self.info_window.web.execute_script,
-                      'cpu_div = document.getElementById("cpu");\
-                       cpu_info_div = document.getElementById("cpu_info");')"""
 
         while self.running:
-            print "tttt"
-            # Use os module and bash to recup informations
+            # Use os module and bash to get informations
             memorie_use = os.popen('mem=$(free -m);echo $mem|tail -2|cut -d ":" -f3|cut -d " " -f2').readline()
             memorie_cached = os.popen('mem=$(free -m);echo $mem|tail -2|cut -d ":" -f3|cut -d " " -f3').readline()
             memorie_rest = int(memorie_total)-int(memorie_use)
             pourcent_memorie_use = float(memorie_use)/float(memorie_total)*100
-            print pourcent_memorie_use
-            #memorie_use = float(memorie_use)-float(memorie_cached)
-            """GLib.idle_add(self.info_window.web.execute_script, 'b='+str(memorie_use))
-            GLib.idle_add(self.info_window.web.execute_script, 'c='+str(memorie_cached))
-            GLib.idle_add(self.info_window.web.execute_script, 'd='+str(memorie_rest))
-            GLib.idle_add(self.info_window.web.execute_script, 'e='+str("%.2f" % pourcent_memorie_use))
-            GLib.idle_add(self.info_window.web.execute_script, 'f='+'"'+str(chaine)+'"')
-            GLib.idle_add(self.info_window.web.execute_script,
-                         'info_sys(a,b,c,d,e,f)')"""
-            # Use psutil module to recup cpu information, this module is optimized for this.
             cpu_percentage_by_cpu = psutil.cpu_percent(interval=0.7, percpu=True)
             count_cpu = 1
             for cpu in cpu_percentage_by_cpu:
                 GLib.idle_add(self.javascript, '$("#progress_'+str(count_cpu)+' meter").attr("value",'+str(cpu)+')')
-                print cpu, count_cpu, cpu_percentage_by_cpu
-                """GLib.idle_add(self.info_window.web.execute_script, 
-                             'cpu_bar_construct("'+str(cpu)+'", "'+str(count_cpu)+'", "'+str(len(cpu_percentage_by_cpu))+'")')"""
                 count_cpu += 1
        

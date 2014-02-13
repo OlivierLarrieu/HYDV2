@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-from gi.repository import Gtk, Gdk
-import sys
+__author__ = "Olivier LARRIEU"
+__version__ = "0.1"
+
+from gi.repository import Gdk
 
 class Hydv_Screen_Utils(object):
     """ ============================================================== """
     """ Class generic                                                  """
     """ ============================================================== """
-
     @classmethod
     def get_screen_width(cls):
         screen = Gdk.Screen.get_default()
@@ -26,13 +27,10 @@ class Hydv_Screen_Utils(object):
         monitor_number = screen.get_n_monitors()
         return monitor_number
 
-
 class Hydv_Listner():
     """ ============================================================== """
-    """ Class generic                                                  """
     """ listen for javascript event and evaluate the action            """
-    """ the action is a method or function existing in a module Action """
-    """ Each view is connected to its own Hydv_Listner """
+    """ Each view is connected to its own Hydv_Listner.Actions         """
     """ ============================================================== """
     @classmethod
     def view_init(self, action, widget):
@@ -70,10 +68,13 @@ class Hydv_Listner():
             else:
                 Hydv_Listner.evaluate_action(action, widget, caller)                
 
-
-
 class HydvWidgets(object):
     def __init__(self, javascript_context):
+        """
+        HydvWidgets must be instanciate in the principal window.
+        HydvWidgets get traces of all embed objects, and manage
+        the different open/close stage in the window.
+        """
         self._stage_counter = 0
         self._div_counter = 0
         self._button_counter = 0
@@ -115,30 +116,19 @@ class HydvWidgets(object):
         self.master_stage_collection.append(kwargs['context'])
         return Hydv_MasterStage(self.javascript_context, width, height, self._stage_counter, zindex, classname)
 
-    def Hydv_Stage(self, **kwargs):
-        for k in kwargs:
-            try:
-                str(kwargs[k])
-            except KeyError:
-                print "argument %s not valid."%k
-                Gtk.main_quit()
-                sys.exit(1)
-                raise
-                
+    def Hydv_Stage(self, **kwargs):                
         width = kwargs['width']
         height = kwargs['height']
         zindex = kwargs['zindex']
         classname = kwargs['classname']
-        self._stage_counter += 1
-        new_stage = Hydv_Stage(self.javascript_context, width, height, self._stage_counter, zindex, classname)
-        return new_stage
-        
+        self._stage_counter += 1 
+        return Hydv_Stage(self.javascript_context, width, height, self._stage_counter, zindex, classname)
+
     def Hydv_Div(self, **kwargs):
         width = kwargs['width']
         height = kwargs['height']
         text = kwargs['text']
         classname = kwargs['classname']
-
         self._div_counter += 1
         return Hydv_Div(self.javascript_context, text, width, height, self._div_counter, classname)
 
@@ -147,7 +137,6 @@ class HydvWidgets(object):
         height = kwargs['height']
         text = kwargs['text']
         classname = kwargs['classname']
-
         self._button_counter += 1
         return Hydv_Button(self.javascript_context, text, width, height, self._button_counter, classname)
 
@@ -156,7 +145,6 @@ class HydvWidgets(object):
         height = kwargs['height']
         path = kwargs['path']
         classname = kwargs['classname']
-
         self._icon_counter += 1
         return Hydv_Icon(self.javascript_context, width, height, self._icon_counter, path, classname)
 
@@ -171,17 +159,14 @@ class HydvWidgets(object):
     def Hydv_ProgressBar(self, **kwargs):
         width = kwargs['width']
         height = kwargs['height']
-
         self._progressbar_counter += 1
         return Hydv_ProgressBar(self.javascript_context, width, height, self._progressbar_counter)
 
 class Hydv_MasterStage(object):
     """ ============================================================== """
-    """ A stage is a container for embed application in HydvWindow     """
+    """ A MasterStage the principal container for embed application in HydvWindow     """
     """ A window may have more than one stage.                         """
     """ ============================================================== """
-
-    #print "__INIT stage__",self._stage_counter
     def __init__(self, javascript_context, width, height, number, zindex, classname):
         self.width = width
         self.height = height
@@ -229,11 +214,9 @@ class Hydv_MasterStage(object):
 
 class Hydv_Stage(object):
     """ ============================================================== """
-    """ A stage is a container for embed application in HydvWindow     """
-    """ A window may have more than one stage.                         """
+    """ A stage is a container for embed MasterStage    """
+    """ A MasterStage may have more than one stage.                         """
     """ ============================================================== """
-
-    #print "__INIT stage__",self._stage_counter
     def __init__(self, javascript_context, width, height, number, zindex, classname):
         self.width = width
         self.height = height
@@ -396,4 +379,3 @@ class Hydv_Footer(object):
 
     def add(self, element):
         self.javascript('Tools.Footer_add("'+str(element.id)+'");')
-

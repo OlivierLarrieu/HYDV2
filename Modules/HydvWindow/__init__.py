@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+__author__ = "Olivier LARRIEU"
+__version__ = "0.1"
+
 import os
 import sys
 import cairo
@@ -9,8 +12,6 @@ from gi.repository import GLib
 from gi.repository import WebKit
 
 GLib.threads_init()
-screen_x , screen_y = Gdk.Screen.width(), Gdk.Screen.height()
-screen = Gdk.Screen()
 
 class View(WebKit.WebView):
     def __init__(self, x, y, url, connected_function, caller_instance):
@@ -63,12 +64,9 @@ class View(WebKit.WebView):
                                'enable-dns-prefetching',)
         for sets in settings_list_true:
              browser_settings.set_property(sets, True)
-
         for sets in settings_list_false:
-             browser_settings.set_property(sets, False)
-           
-        self.set_settings(browser_settings)
-        
+             browser_settings.set_property(sets, False)           
+        self.set_settings(browser_settings)       
         self.connect("title-changed", connected_function, caller_instance)
         self.connect("navigation-policy-decision-requested",
                                           self._disable_drop)
@@ -104,17 +102,14 @@ class HyWindow(Gtk.Window):
         self.set_skip_pager_hint(True)
         self.set_resizable(False)
         self.stick()
-
         self.set_app_paintable(True)
         self.screen = self.get_screen()
-        self.visual = self.screen.get_rgba_visual()
-        
+        self.visual = self.screen.get_rgba_visual()        
         if self.visual != None and self.screen.is_composited():
             self.set_visual(self.visual)
 
         self.connect("destroy", self.leave)       
         self.connect("draw", self.area_draw)
-        
 
     def area_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)

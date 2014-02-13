@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
@@ -17,27 +16,21 @@ class Stage_Actions():
 
     def show_category(self, category):
         self.javascript('$(".apps_button").hide();$(".add").hide()')
-        self.javascript('$(".'+category+'").fadeIn()')
-        
+        self.javascript('$(".'+category+'").fadeIn()')        
+
     def launch_command(self, command):
         os.system(command+" &")
 
-    def _open(self):
-        print "open"
-        #1) animate category stage on top        
+    def _open(self):  
         self.stage_principal.animate(direction="left", px="0", speed=150, delay=0)
         self.category_container.animate(direction="top", px="30", speed=150, delay=250)
-        #3) fade out applications list
-        
-
+        self.stage.animate(direction="top", px=30, speed=150, delay=550)
     def _close(self):
-        print "totototottotot"
-        #1) animate category stage on top
-        self.category_container.animate(direction="top", px="-80", speed=150, delay=0)
-        #3) fade out applications list
-        self.stage_principal.animate(direction="left", px="-350", speed=150, delay=200)
+        self.stage.animate(direction="top", px=-self.stage.height-100, speed=250, delay=0)
+        self.category_container.animate(direction="top", px="-80", speed=150, delay=200)
+        
+        self.stage_principal.animate(direction="left", px="-350", speed=150, delay=400)
         self.javascript('Tools.Send("open_sysinfo_stage")')
-
 
 class Stage(object, Stage_Actions):
     def __init__(self, caller):
@@ -58,15 +51,14 @@ class Stage(object, Stage_Actions):
                                                                          classname="black_stage")
         # Display list off applications
         self.stage = caller.HydvWidgets_instance.Hydv_Stage(width="98%",
-                                                            height=245,
+                                                            height=270,
                                                             zindex=700,
                                                             classname="apps_button_stage")
         category_indice = 0
         Apps = HydvDesktopEntries.get_applications()
         keylist = Apps.keys()
         keylist.sort()
-        for cat in keylist:        
-           
+        for cat in keylist:                  
             button = caller.HydvWidgets_instance.Hydv_Button(text="",
                                                              width=30,
                                                              height=30,
@@ -108,16 +100,11 @@ class Stage(object, Stage_Actions):
             category_indice += 1                
         self.stage_principal.add(self.category_container )
         self.stage_principal.add(self.stage)        
-
         apps_button = caller.HydvWidgets_instance.Hydv_Button(text="Applications",
                                                               width=100,
                                                               height=20,
                                                               classname="btn")
-
         apps_button.onclick("open_stage('%s')" %self.stage_principal.id)
         caller.footer.add(apps_button)
-
         self._open()
-
-        print "done"
         caller.Window.view.connect("title-changed", Hydv_Listner.Actions, self)

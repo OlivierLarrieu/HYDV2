@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 
@@ -22,9 +22,9 @@ class BusService(dbus.service.Object):
         
     @dbus.service.method('org.hydv2.appswindow')
     def show(self, x, y):
-        self.AppsWindow.realize()
         self.AppsWindow.show_all()
-        self.AppsWindow.move(x, y-self.AppsWindow.get_size()[1])
+        self.AppsWindow.set_position(Gtk.WindowPosition.MOUSE)
+        self.move(x, y)
 
     @dbus.service.method('org.hydv2.appswindow')
     def hide(self):
@@ -36,7 +36,7 @@ class BusService(dbus.service.Object):
 
     @dbus.service.method('org.hydv2.appswindow')
     def getWindow(self, arg):
-        print arg
+        pass
         
 class Service(object):
     def __init__(self, AppsWindow):

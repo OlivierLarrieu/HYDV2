@@ -49,26 +49,20 @@ class AppsWindow(object, AppsWindow_Actions):
         self.root_container = False
         self.width = 330
         self.height = 400
-        html_file = realpath + "/Apps/AppsWindow/index.html"
-        self.type_hint = 6
-        self.is_above = True
-        self.window_title = 'AppsWindow'
-        # Construct the window
-        self.Window = HydvWindow.HyWindow(self,
-                                   self.width,
-                                   self.height,
-                                   html_file,
-                                   Hydv_Listner.Actions, # Connecte the view signal to this Method
-                                   self.type_hint,
-                                   self.is_above,
-                                   self.window_title)
+
+        self.Window = HydvWindow.HyWindow(caller_instance=self,
+                                          width=self.width,
+                                          height=self.height,
+                                          type_hint=6,
+                                          is_above=True,
+                                          title='AppsWindow')
         # Move the window
         self.bottom_position()
         self.Window.hide()
-        #=== self.javascript is an alias to : self.Window.view.execute_script ===#
-        #=== self.javascript execute javascript code evaluate by the view =======#
-        self.javascript = getattr(self.Window.view, "execute_script")
-        self.HydvWidgets_instance = HydvWidgets(self.javascript)
+
+        self.javascript = self.Window.javascript
+        self.HydvWidgets_instance = self.Window.HydvWidgets_instance
+
         #=== Each Hydv Window has its own communication bus
         self.BusService = AppsWindowBus.Service(self.Window)
         self.BusService.start()
@@ -76,12 +70,13 @@ class AppsWindow(object, AppsWindow_Actions):
     def on_view_init(self, action):
         """ Override from Hydv_Listner.on_view_init """
         """ Action here are executed on the View initialisation only """
-        # Create the Root container        
-        self.create_root_container(self.width, self.height)
+        # Create the Root container
+        self.Window.view.create_root_container()   
+        #self.create_root_container(self.width, self.height)
         # Header
         self.header = self.HydvWidgets_instance.Hydv_Header()
         # Footer
-        self.footer = self.HydvWidgets_instance.Hydv_Footer()
+        #self.footer = self.HydvWidgets_instance.Hydv_Footer()
         # Activate specific applications/stage embeded in applications window
         # TODO: use importlib for this with specifics controls
         from Stages import Applications
@@ -89,7 +84,4 @@ class AppsWindow(object, AppsWindow_Actions):
         from Stages import SysInfos
         self.sysinfo_stage = SysInfos.Stage(self)
 
-    def create_root_container(self, width, height):
-        """ Each hydv window need a root container """
-        self.javascript('Tools.Create_root_container("'+str(width)+'","'+str(height)+'");')
-        self.root_container = True
+

@@ -59,8 +59,33 @@ Tools.Footer_add = function(element_id){
     element.style.visibility = "visible";
     Tools.Footer.appendChild(element);
 }
+Tools.Create_MasterStage = function(width, height, id, zindex, classname){    
+    new_stage = document.createElement('div');
+    new_stage.id = id;
+    new_stage.style.minWidth = width;
+    new_stage.style.minHeight = height+"px";
+    new_stage.style.maxWidth = width;
+    new_stage.style.maxHeight = height+"px";
+    try{
+        new_stage.style.top = Tools.Header.style.minHeight;
+    }
+    catch(e){
+    
+    }
+    new_stage.style.position = "absolute";
+    new_stage.style.zIndex = zindex;
+    new_stage.style.left = -width+"px";
+    new_stage.style.top = Tools.Header.style.minHeight+"px";
+    new_stage.style.overflow = "auto";
+    new_stage.style.overflowX = "hidden"
+    new_stage.style.overflowY = "hidden"
+    root_container = document.getElementById('root_container')
+    root_container.appendChild(new_stage);
+    return true   
 
-Tools.Create_stage = function(width, height, id, zindex, classname){    
+}
+
+Tools.Create_stage = function(width, height, id, zindex, classname){ 
     new_stage = document.createElement('div');
     new_stage.id = id;
     new_stage.style.minWidth = width;

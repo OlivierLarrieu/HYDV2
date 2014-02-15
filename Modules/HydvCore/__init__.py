@@ -3,7 +3,33 @@
 __author__ = "Olivier LARRIEU"
 __version__ = "0.1"
 
+import os
 from gi.repository import Gdk
+
+class Stage(object):
+    def __init__(self, caller):
+        self.state = "open"
+        self.caller = caller
+        self.javascript = caller.javascript
+        # Stage principal
+        self.stage_principal = caller \
+                              .HydvWidgets_instance \
+                              .Hydv_MasterStage(context=self,
+                                                width=caller.width,
+                                                height=caller.height,
+                                                zindex=800,
+                                                classname="stage")
+        self._open()
+        caller.Window.view.connect("title-changed", Hydv_Listner.Actions, self)
+        
+    def launch_command(self, command):
+        os.system(command+" &")
+
+    def _open(self):  
+        pass
+        
+    def _close(self):
+        pass
 
 class Hydv_Screen_Utils(object):
     """ ============================================================== """
@@ -46,7 +72,6 @@ class Hydv_Listner():
         # Interpret action from javascript
         try:
             fonction = action.split('(')[0]
-            print "fonction", fonction
             arg = action.replace(fonction, '')[1:-2].replace("'",'').replace('"','')
             call = getattr(caller, fonction)            
             if arg != "":
@@ -59,9 +84,7 @@ class Hydv_Listner():
     @classmethod
     def Actions(self, widget, frame, action, caller):
         """ Connector for a View to listen javascript events. """
-        print caller
         if action != "_":
-            print "action widget.is_init", widget.is_init
             # First initialisation of the view
             if not widget.is_init:
                 Hydv_Listner.view_init(action, widget)
@@ -89,7 +112,6 @@ class HydvWidgets(object):
         return self.master_stage_collection
 
     def open_stage(self, stage_id):
-        print "here1", stage_id
         for stage in self.get_stage_collection():
             print stage.state
             print stage.stage_principal.id, stage_id
@@ -100,7 +122,6 @@ class HydvWidgets(object):
                     stage.state = "open"
 
     def close_current_stage(self):
-        print "here2"
         for stage in self.get_stage_collection():
             print stage.state
             print "open"
@@ -278,6 +299,13 @@ class Hydv_Div(object):
                                                +str(self.height)+'","'
                                                +self.id+'","'
                                                +self.classname+'");')
+    def animate(self, **kwargs):
+        direction = kwargs['direction']
+        px = kwargs['px']
+        speed = kwargs['speed']
+        delay = kwargs['delay']
+        self.javascript('$("#%s").delay(%s).animate({"%s": "%spx"}, %s);'%(self.id, delay, direction, px, speed))
+
     def add(self, element):
         self.javascript('Tools.Div_add("'+self.id+'","'+str(element.id)+'");')
 
@@ -289,6 +317,9 @@ class Hydv_Div(object):
 
     def onmouseout(self, action):
         self.javascript('Tools.Connect_Onmouseout("'+action+'","'+self.id+'");')
+
+    def innerText(self, text):
+        self.javascript('$("#%s")[0].innerText = "%s"'%text)
 
 class Hydv_Button(object):
     def __init__(self, javascript_context, text, width, height, number, classname):

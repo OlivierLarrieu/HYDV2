@@ -10,16 +10,22 @@ from gi.repository import Gtk
 from gi.repository import Gdk 
 from gi.repository import GLib
 from gi.repository import WebKit
+from HydvCore import HydvWidgets
+from HydvCore import Hydv_Listner
 
 GLib.threads_init()
 
 class View(WebKit.WebView):
-    def __init__(self, x, y, url, connected_function, caller_instance):
+    def __init__(self, **kwargs):
+
+        self.width = kwargs['width']
+        self.height = kwargs['height']
+        caller_instance = kwargs['caller_instance']
+
         super(View, self).__init__()
-        self.url = url
         self.set_transparent(True)
         self.set_app_paintable(True)
-        self.set_size_request(x,y)
+        self.set_size_request(self.width, self.height)
         self._is_initialized = False
         browser_settings = self.get_settings()
         settings_list_true = ('enable-frame-flattening',
@@ -67,11 +73,15 @@ class View(WebKit.WebView):
         for sets in settings_list_false:
              browser_settings.set_property(sets, False)           
         self.set_settings(browser_settings)       
-        self.connect("title-changed", connected_function, caller_instance)
-        self.connect("navigation-policy-decision-requested",
-                                          self._disable_drop)
-        self.open("file://" + url)
+        
+        self.connect("navigation-policy-decision-requested", self._disable_drop)
+        
+        tools = open(os.path.dirname(__file__)+'/Js/Tools.js','r').read()
+        self.execute_script(tools)
+                                          
+        self.open("file://" + os.path.dirname(__file__)+'/Template/index.html')
         self.connect("draw", self.area_draw)
+        self.connect("title-changed", Hydv_Listner.Actions, caller_instance)
 
     def area_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)
@@ -82,15 +92,26 @@ class View(WebKit.WebView):
     def _disable_drop(self, widget,widget1,request,widget2,widget3, data=None):
         #hack to disable drop in webview
         uri = request.get_uri()
-        if uri != "file://" + self.url:
+        if uri != "file://" + os.path.dirname(__file__)+'/Template/index.html':
             self.stop_loading()
 
+    def create_root_container(self):
+        jquery = open(os.path.dirname(__file__)+'/Js/jquery.js','r').read()
+        self.execute_script(jquery)        
+        self.execute_script('Tools.Create_root_container("'+str(self.width)+'","'+str(self.height)+'");')
+
 class HyWindow(Gtk.Window):
-    def __init__(self, caller_instance, x, y, url,
-                 connected_function, type_int, above_value, title):
+    def __init__(self, **kwargs):
+        caller_instance = kwargs['caller_instance']
+        x = kwargs['width']
+        y = kwargs['height']
+        type_int = kwargs['type_hint']
+        above_value = kwargs['is_above']
+        title = kwargs['title']
+
         super(HyWindow, self).__init__()
         self.caller_instance = caller_instance
-        self.view = View(x, y, url, connected_function, self.caller_instance)
+        self.view = View(width=x, height=y, caller_instance=self.caller_instance)
         self.view.is_init = False
         self.add(self.view)
         self.set_title(title)
@@ -110,6 +131,8 @@ class HyWindow(Gtk.Window):
 
         self.connect("destroy", self.leave)       
         self.connect("draw", self.area_draw)
+        self.javascript = getattr(self.view, "execute_script")
+        self.HydvWidgets_instance = HydvWidgets(self.javascript)
 
     def area_draw(self, widget, cr):
         cr.set_source_rgba(0, 0, 0, 0)

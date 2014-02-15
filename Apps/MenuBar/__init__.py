@@ -39,46 +39,36 @@ class MenuBar_Actions():
 
         screen_height = self.Hydv_Screen_Utils.get_screen_height()
         y_position = screen_height - self.height
-        show(0, y_position)
-        
-    def bottom_position(self):
-        screen_height = self.Hydv_Screen_Utils.get_screen_height()
-        y_position = screen_height - self.height
-        self.Window.move(0, y_position)
-        self.screen_position = "bottom"
-
-    def top_position(self):
-        self.Window.move(0, 0)
-        self.screen_position = "top"
-
-    def open_shutdow(self):       
-        self.stage6.slide(2000, 1, 0)
-
-    def close_shutdow(self):
-        self.stage6.slide(2000, 1, -500)
-
-    def openall(self):
-        self.stage2.slide(2000, 1, -0)
-
-    def closeall(self):
-        
-        self.logout_stage.slide(2000, 1, -330)
-
-    def open_nautilus(self):
-        os.system('nautilus &')
-        return True
-
-    def slide_init(self):
-        self.closeall()
-        self.stage3.slide(2000, 1, -330)
-        self.stage4.slide(2000, 1, -300)
+        show(0,self.height)
 
     def slide_next(self):
-        self.closeall()
-        self.stage3.slide(2000, 1, -self.width)
-        self.stage4.slide(2000, 1, -self.width)
+        self.Window.javascript('$("#%s").hide();alert()'%self.principal_bar.id)
         
-        
+    def open_logout_stage(self):
+        print self.logout
+        if self.logout:
+            self.logout_stage.animate(direction="left", px=-1000, speed=400, delay=0)
+            self.logout = False
+        else:
+            self.logout_stage.animate(direction="left", px=0, speed=400, delay=0)
+            self.logout = True
+
+    def launch_command(self, command):
+        os.system(command+" &")
+
+    def add_fav_app(self, app, command):
+        apps_button = self.HydvWidgets_instance.Hydv_Button(text="",
+                                                              width=25,
+                                                              height=25,
+                                                              classname="fav_app")
+        apps_button.onclick("launch_command('%s')"%command)
+        add_icon = self.HydvWidgets_instance.Hydv_Icon(width=25,
+                                                     height=25,
+                                                     path=app,
+                                                     classname="")
+        apps_button.add(add_icon)
+        self.principal_bar.add(apps_button)
+            
 class MenuBar(object, MenuBar_Actions):
     """ =========================== """
     """ MenuBar Element Constructor """
@@ -90,112 +80,103 @@ class MenuBar(object, MenuBar_Actions):
         self.root_container = False
         self.appswindowstate = False
         self.Hydv_Screen_Utils = Hydv_Screen_Utils()
+
         self.width = self.Hydv_Screen_Utils.get_screen_width()
         self.height = 30
-        html_file = realpath + "/Apps/MenuBar/index.html"
-        self.type_hint = 6
-        self.is_above = True
-        self.window_title = 'MenuBar'
-        # Construct the window
-        self.Window = HydvWindow.HyWindow(self,
-                                   self.width,
-                                   self.height,
-                                   html_file,
-                                   Hydv_Listner.Actions, # Connecte the view signal to this Method
-                                   self.type_hint,
-                                   self.is_above,
-                                   self.window_title)
-        # Move the window
-        self.bottom_position()
 
-        #=== self.javascript is an alias to : self.Window.view.execute_script ===#
-        #=== self.javascript execute javascript code evaluate by the view =======#
-        self.javascript = getattr(self.Window.view, "execute_script")
-        #=== self.HydvWidgets_instance = self.HydvWidgets_instance() is the widget controller
-        #=== it is usefull to instanciate it with the javascript context
-        self.HydvWidgets_instance = HydvWidgets(self.javascript)
-        #=== Each Hydv Window has its own communication bus
-        #GLib.timeout_add(400, MenuBarBus.BusService, self.Window)
-        self.BusService = MenuBarBus.Service(self.Window)
+        self.Window = HydvWindow.HyWindow(caller_instance=self,
+                                          width=self.width,
+                                          height=self.height,
+                                          type_hint=6,
+                                          is_above=True,
+                                          title='MenuBar')
+
+        # Move the window
+        #self.bottom_position()
+        
+        self.javascript = self.Window.javascript
+        self.HydvWidgets_instance = self.Window.HydvWidgets_instance
+
+        self.BusService = MenuBarBus.Service(self)
         self.BusService.start()
         #=== Start the AppsWindow
+
     def on_view_init(self, action):
         """ Override from Hydv_Listner.on_view_init """
         """ Action here are executed on the View initialisation only """
         # Create the Root container
-        self.create_root_container(self.width, self.height)
-        self.create_menu_stage()
-        self.create_logout_stage()
-        self.create_principal_bar()
-        self.create_second_bar()
-        self.slide_init()
+        self.Window.view.create_root_container()
+        self.menu_stage = self.create_menu_stage()
+        self.logout_stage = self.create_logout_stage()
+        self.principal_bar = self.create_principal_bar()
+        self.second_bar = self.create_second_bar()       
         self.Window.show_all()
 #======================================= TESTING FUNCTIONS ===================#        
-    def create_root_container(self, width, height):
-        """ Each hydv window need a root container """
-        self.javascript('Tools.Create_root_container("'+str(width)+'","'+str(height)+'");')
-        self.root_container = True
+    def create_menu_stage(self):
+        stage = self.HydvWidgets_instance.Hydv_Stage(width=331,
+                                                                 height=self.height,
+                                                                 zindex=1000,
+                                                                 classname="left_stage")
+        button_application = self.HydvWidgets_instance.Hydv_Div(width=100, height=20, text="Menu", classname="btn")
+        button_application.onclick('open_appswindow')
+        stage.add(button_application)
+        spacer = self.HydvWidgets_instance.Hydv_Div(width=190, height=20, text="", classname="")
+
+        stage.add(spacer)
+        button_logout = self.HydvWidgets_instance.Hydv_Button(text="",
+                                                                 width=20,
+                                                                 height=20,
+                                                                 classname="btn")
+        button_logout.onclick('open_logout_stage')
+        stage.add(button_logout)
+        return stage
+
+    def create_logout_stage(self):
+        self.logout = False
+        stage = self.HydvWidgets_instance.Hydv_Stage(width=350, height=self.height, zindex=900, classname="left_stage")
+        
+        button_logout = self.HydvWidgets_instance.Hydv_Button(text="logout", width=70, height=20, classname="btn")
+        button_logout.onclick('leave')
+
+        button_shutdown = self.HydvWidgets_instance.Hydv_Button(text="shutdown", width=70, height=20, classname="btn")
+        button_shutdown.onclick('leave')
+
+        button_reboot = self.HydvWidgets_instance.Hydv_Button(text="reboot", width=70, height=20, classname="btn")
+        button_reboot.onclick('leave')
+
+        button_sleep = self.HydvWidgets_instance.Hydv_Button(text="sleep", width=70, height=20, classname="btn")
+        button_sleep.onclick('leave')
+
+        spacer = self.HydvWidgets_instance.Hydv_Div(width=10, height=20, text="", classname="")
+        stage.add(spacer)
+        stage.add(button_logout)
+        stage.add(button_shutdown)
+        stage.add(button_reboot)        
+        stage.add(button_sleep)
+        stage.animate(direction="left", px=-350, speed=200, delay=0)
+        return stage
 
     def create_principal_bar(self):
-        self.stage3 = self.HydvWidgets_instance.Hydv_Stage(width=self.width-self.button_stage.width-20,
+        stage = self.HydvWidgets_instance.Hydv_Stage(width=self.width-self.menu_stage.width-20,
                                                            height=self.height,
                                                            zindex=800,
                                                            classname="stage")
-        self.button_test = self.HydvWidgets_instance.Hydv_Button(text="apps",
-                                                                 width=100,
-                                                                 height=20,
-                                                                 classname="btn")
-        self.button_test.onclick('slide_next')
-        self.stage3.add(self.button_test)
-
+        stage.animate(direction="left", px=-self.logout_stage.width, speed=200, delay=0)
+        return stage
     def create_second_bar(self):
-        self.stage4 = self.HydvWidgets_instance.Hydv_Stage(width=self.width-self.button_stage.width,
+        stage = self.HydvWidgets_instance.Hydv_Stage(width=self.width-self.menu_stage.width,
                                                            height=self.height,
                                                            zindex=800,
                                                            classname="stage")
         for i in range(10):
-            button_test2 = self.HydvWidgets_instance.Hydv_Button(text="apps"+str(i),
+            button= self.HydvWidgets_instance.Hydv_Button(text="apps"+str(i),
                                                                  width=50,
                                                                  height=20,
                                                                  classname="btn")
-            button_test2.onclick('slide_init')
-            self.stage4.add(button_test2)
+            button.onclick('slide_init')
+            stage.add(button)
+        return stage
 
-    def create_menu_stage(self):
-        self.button_stage = self.HydvWidgets_instance.Hydv_Stage(width=330,
-                                                                 height=self.height,
-                                                                 zindex=1000,
-                                                                 classname="left_stage")
-        self.button_application = self.HydvWidgets_instance.Hydv_Icon(width=self.height,
-                                                                      height=self.height, 
-                                                                      path=realpath + '/Apps/AppsWindow/medias/icons/add.png',
-                                                                      classname="menu_button")
 
-        self.button_application.onclick('open_appswindow')
-        self.button_stage.add(self.button_application)
-
-    def create_logout_stage(self):
-        self.logout_stage = self.HydvWidgets_instance.Hydv_Stage(width=350, height=self.height, zindex=900, classname="left_stage")
-        
-        self.button_logout = self.HydvWidgets_instance.Hydv_Button(text="logout", width=50, height=20, classname="btn")
-        self.button_logout.onclick('leave')
-
-        self.button_shutdown = self.HydvWidgets_instance.Hydv_Button(text="shutdown", width=50, height=20, classname="btn")
-        self.button_shutdown.onclick('leave')
-
-        self.button_reboot = self.HydvWidgets_instance.Hydv_Button(text="reboot", width=50, height=20, classname="btn")
-        self.button_reboot.onclick('leave')
-
-        self.button_sleep = self.HydvWidgets_instance.Hydv_Button(text="sleep", width=50, height=20, classname="btn")
-        self.button_sleep.onclick('leave')
-
-        self.button_close = self.HydvWidgets_instance.Hydv_Button(text="sleep", width=50, height=20, classname="btn")
-        self.button_close.onclick('leave')
-
-        self.logout_stage.add(self.button_logout)
-        self.logout_stage.add(self.button_shutdown)
-        self.logout_stage.add(self.button_reboot)        
-        self.logout_stage.add(self.button_sleep)
-        self.logout_stage.add(self.button_close)
         
 

@@ -5,11 +5,13 @@ from gi.repository import GLib
 import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 
+GLib.threads_init()
+
 class BusService(dbus.service.Object):
     # Dbus service to communicate with MenuBar
-    def __init__(self, MenuBarWindow):
+    def __init__(self, MenuBar):
         #print "bar bus launched..."
-        self.MenuBarWindow = MenuBarWindow
+        self.MenuBar = MenuBar
         try:
             bus_name = dbus.service.BusName('org.hydv2.menubar', bus=dbus.SessionBus())
             dbus.service.Object.__init__(self, bus_name, '/org/hydv2/menubar')
@@ -17,13 +19,12 @@ class BusService(dbus.service.Object):
         except:
             pass 
         
-    @dbus.service.method('org.hydv2.menubar')
-    def test(self):
-        self.MenuBarWindow.view.execute_script('Tools.Send("self.closeall()");')
 
     @dbus.service.method('org.hydv2.menubar')
-    def add_favorite_app(self, app):
-        self.MenuBarWindow.view.execute_script('Tools.add_fav_app("%s");'%app)
+    def add_favorite_app(self, arg):
+        app = arg.split('#')[0]
+        command = arg.split('#')[1]
+        self.MenuBar.add_fav_app(app, command)
 
 class Service(object):
     def __init__(self, MenuBarWindow):
